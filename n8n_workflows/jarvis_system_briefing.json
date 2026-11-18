@@ -1,0 +1,76 @@
+{
+  "name": "Jarvis System Briefing",
+  "nodes": [
+    {
+      "id": "2f1443a2-3633-4389-9c9f-e431d28c2d44",
+      "name": "Jarvis Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "jarvis-briefing",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jarvis-briefing",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "745647f8-e5ff-4e0b-b487-287ad42fbc9c",
+      "name": "Jarvis Logic Node",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const payload = $input.first()?.json || {};\nconst goal = \"Jarvis System-Briefing Status-Pipeline\";\nreturn [{ json: { ok: true, workflow: goal, received: payload.body || payload, ts: new Date().toISOString() } }];"
+      }
+    },
+    {
+      "id": "cd822f83-05df-4d5c-9837-a3520791c677",
+      "name": "Respond to Jarvis",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        780,
+        300
+      ],
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Jarvis Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Jarvis Logic Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jarvis Logic Node": {
+      "main": [
+        [
+          {
+            "node": "Respond to Jarvis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

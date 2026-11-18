@@ -1,0 +1,43 @@
+# =====================================================================
+# J.A.R.V.I.S. – Leichtgewichtige ONNX-Abhängigkeiten (< 1,5 GB Ziel)
+# Kein PyTorch, kein CUDA/nvidia-*, kein Electron/Playwright/PyWebView
+# Plattformen: Windows 11 (x64) & Raspberry Pi 5 (ARM64)
+# =====================================================================
+
+# Cloud- & Lokal-KI Clients
+google-genai>=1.0.0
+groq>=0.13.0
+openai>=1.50.0
+requests>=2.32.0
+ollama>=0.4.0
+
+# Reine ONNX-Sprachpipeline (Wake-Word, STT, TTS)
+openwakeword>=0.6.0
+faster-whisper>=1.1.0
+piper-tts>=1.2.0
+edge-tts>=6.1.0
+pyttsx3>=2.90
+
+# Audio-Aufnahme & Wiedergabe direkt über PortAudio (Benutzerkontext)
+sounddevice>=0.5.0
+soundfile>=0.12.0
+numpy>=1.26.0
+
+# Vision, Desktop-Steuerung & Screenshots (Headless, kein GUI-Toolkit-Ballast)
+opencv-python-headless>=4.10.0
+pyautogui>=0.9.54
+mss>=9.0.1
+Pillow>=10.0.0
+
+# System, Sicherheit, Multi-Monitor & Automatisierung
+psutil>=6.0.0
+python-dotenv>=1.0.0
+cryptography>=42.0.0
+schedule>=1.2.2
+screeninfo>=0.8.1
+
+# Web-HUD & Smart-Home API (FastAPI -> Systembrowser --app= Modus)
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+websockets>=13.0
+pystray>=0.19.5

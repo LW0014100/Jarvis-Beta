@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#050608" />
+  <title>JARVIS // FENSTER 2: SCREEN-MATRIX (3x LIVE)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/hud-nextgen.css" />
+  <link rel="stylesheet" href="/static/liquid-bento.css" />
+  <link rel="stylesheet" href="/static/tactical-os.css" />
+  <style>
+    body { margin: 0; overflow: hidden; }
+    .vis-wrap { display: flex; flex-direction: column; height: 100vh; padding: 10px 12px; gap: 9px; box-sizing: border-box; }
+    .vis-actions { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+    .v-btn { cursor: pointer; padding: 5px 10px; transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease; }
+    .v-btn.hot { border-color: rgba(255, 176, 32, 0.55) !important; color: #ffe2a8 !important; background: rgba(255, 176, 32, 0.11) !important; }
+    .v-btn.hot:hover { border-color: var(--tx-gold) !important; box-shadow: 0 0 14px rgba(255, 176, 32, 0.35); }
+    .fps-ctrl {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--fm); font-size: 9.5px; letter-spacing: 0.1em; color: var(--tx-dim);
+      padding: 3px 8px; border: 1px solid var(--tx-hair); border-radius: 3px; background: rgba(255, 255, 255, 0.02);
+    }
+    .fps-ctrl input[type="range"] { width: 68px; accent-color: var(--tx-cyan); cursor: pointer; }
+
+    /* Tactical 3-Monitor Topology Mini-Map + Live Cursor Radar */
+    .radar-map { padding: 8px 14px 10px 14px; flex: 0 0 auto; }
+    .radar-title {
+      font-family: var(--fm); font-size: 9.5px; letter-spacing: 0.18em; color: var(--tx-dim);
+      margin-bottom: 7px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .radar-stage {
+      position: relative; width: 100%; height: 74px;
+      background:
+        linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px) 0 0 / 16px 16px,
+        linear-gradient(90deg, rgba(0, 240, 255, 0.04) 1px, transparent 1px) 0 0 / 16px 16px,
+        rgba(3, 5, 8, 0.8);
+      border: 1px solid var(--tx-hair);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .mon-rect {
+      position: absolute;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(0, 240, 255, 0.04);
+      display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px;
+      font-family: var(--fm); font-size: 10px; color: var(--tx-platin);
+      transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+      cursor: pointer;
+    }
+    .mon-rect span { font-size: 9px; color: var(--tx-dim); }
+    .mon-rect.cursor-active {
+      border-color: var(--tx-cyan);
+      background: rgba(0, 240, 255, 0.11);
+      box-shadow: inset 0 0 14px rgba(0, 240, 255, 0.22);
+    }
+    .mon-rect.scanning {
+      border-color: var(--tx-orange);
+      background: rgba(255, 77, 0, 0.16);
+      box-shadow: inset 0 0 18px rgba(255, 77, 0, 0.32);
+    }
+    .radar-cursor-dot {
+      position: absolute;
+      width: 12px; height: 12px;
+      margin: -6px 0 0 -6px;
+      border-radius: 50%;
+      border: 1.5px solid var(--tx-cyan);
+      background: rgba(0, 240, 255, 0.35);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.95);
+      pointer-events: none;
+      z-index: 6;
+      transition: left 0.08s linear, top 0.08s linear;
+    }
+    .radar-cursor-dot::before, .radar-cursor-dot::after { content: ""; position: absolute; background: var(--tx-cyan); }
+    .radar-cursor-dot::before { left: 50%; top: -7px; bottom: -7px; width: 1px; }
+    .radar-cursor-dot::after { top: 50%; left: -7px; right: -7px; height: 1px; }
+
+    /* Enlarged 3-Monitor Live Control Feeds */
+    .mon-grid {
+      flex: 1; min-height: 0;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 10px; overflow-y: auto;
+    }
+    .mon-card { display: flex; flex-direction: column; overflow: hidden; transition: border-color 0.18s ease, box-shadow 0.18s ease; }
+    .mon-card.cursor-active {
+      border-color: var(--tx-cyan) !important;
+      box-shadow: inset 0 0 18px rgba(0, 240, 255, 0.09), 0 0 24px rgba(0, 240, 255, 0.24) !important;
+    }
+    .mon-card.scanning {
+      border-color: var(--tx-orange) !important;
+      box-shadow: inset 0 0 18px rgba(255, 77, 0, 0.14), 0 0 24px rgba(255, 77, 0, 0.34) !important;
+    }
+    .mon-card-head {
+      display: flex; justify-content: space-between; align-items: center; gap: 6px;
+      padding: 7px 11px;
+      border-bottom: 1px solid var(--tx-hair);
+      background: linear-gradient(90deg, rgba(0, 240, 255, 0.06), transparent 65%);
+      font-family: var(--fm); font-size: 10px; letter-spacing: 0.08em;
+    }
+    .mon-head-left { display: flex; align-items: center; gap: 7px; min-width: 0; flex-wrap: wrap; }
+    .mon-head-left b { font-size: 11px; color: var(--tx-platin); }
+    .mon-card-btns { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+
+    .mon-img-wrap {
+      position: relative; flex: 1; min-height: 190px;
+      background:
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px) 0 0 / 18px 18px,
+        #030508;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .mon-img-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .mon-card.scanning .mon-scanbar { opacity: 1; animation: monScan 1.05s linear infinite; }
+    .sm-crosshair {
+      position: absolute; display: none;
+      width: 24px; height: 24px; margin: -12px 0 0 -12px;
+      border: 1px solid var(--tx-cyan); border-radius: 50%;
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.9);
+      pointer-events: none; z-index: 5;
+      transition: left 0.08s linear, top 0.08s linear;
+    }
+    .sm-crosshair::before, .sm-crosshair::after { content: ""; position: absolute; background: var(--tx-cyan); }
+    .sm-crosshair::before { left: 50%; top: -8px; bottom: -8px; width: 1px; }
+    .sm-crosshair::after { top: 50%; left: -8px; right: -8px; height: 1px; }
+    .mon-card.cursor-active .sm-crosshair { display: block; }
+
+    /* OCR / Vision Detection Reticle Overlay direkt über dem Monitor-Feed */
+    .ocr-hud-overlay {
+      position: absolute; inset: 10px;
+      border: 1px dashed rgba(255, 176, 32, 0.72);
+      background: rgba(5, 6, 8, 0.76);
+      backdrop-filter: blur(8px);
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 8px 10px;
+      z-index: 7;
+      font-family: var(--fm);
+      box-shadow: inset 0 0 24px rgba(255, 176, 32, 0.14);
+    }
+    .ocr-hud-overlay.hidden { display: none; }
+    .ocr-hud-top {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 9px; letter-spacing: 0.16em; color: var(--tx-gold);
+      border-bottom: 1px solid rgba(255, 176, 32, 0.25); padding-bottom: 5px;
+    }
+    .ocr-hud-body {
+      flex: 1; overflow-y: auto; padding: 6px 0;
+      font-family: var(--fd); font-size: 11.5px; line-height: 1.42; color: var(--tx-platin);
+      white-space: pre-wrap;
+    }
+    .ocr-close-btn {
+      cursor: pointer; background: rgba(255, 176, 32, 0.14); color: #ffe2a8;
+      border: 1px solid rgba(255, 176, 32, 0.45); border-radius: 2px;
+      font-family: var(--fm); font-size: 8.5px; padding: 1px 6px;
+    }
+
+    .mon-foot {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      padding: 6px 11px; font-family: var(--fm); font-size: 9.5px; color: var(--tx-dim);
+      border-top: 1px solid var(--tx-hair); background: rgba(4, 6, 10, 0.65);
+    }
+    .mon-foot-win { color: var(--tx-platin); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ocr-box {
+      padding: 8px 13px; border-radius: 4px;
+      border: 1px solid rgba(255, 176, 32, 0.42);
+      background: rgba(12, 15, 22, 0.9);
+      font-family: var(--fm); font-size: 11px; line-height: 1.45; color: var(--tx-platin);
+      max-height: 82px; overflow-y: auto;
+    }
+    .ocr-box.hidden { display: none; }
+    .win-mover {
+      display: flex; gap: 8px; align-items: center; padding: 8px 14px; flex-wrap: wrap;
+    }
+    .win-sel {
+      flex: 1; min-width: 190px;
+      background: rgba(5, 6, 8, 0.9); color: var(--tx-platin);
+      border: 1px solid var(--tx-hair-strong); border-radius: 3px;
+      padding: 5px 10px; font-family: var(--fm); font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="vis-wrap">
+    <header class="tx-panel tx-head">
+      <div class="tx-title">SCREEN-MATRIX <small>WINDOW 02 · MULTI-MONITOR CONTROL DESK</small></div>
+      <div class="vis-actions">
+        <span id="vs-mouse" class="tx-pill">CURSOR: 0, 0 · M1</span>
+        <span id="vs-fps-badge" class="tx-pill">12.0 FPS · WS</span>
+        <label class="fps-ctrl">TARGET FPS <input id="vs-fps-range" type="range" min="4" max="15" value="12" /><b id="vs-fps-num">12</b></label>
+        <button id="vs-scan-all" class="v-btn hot" type="button">PING ALLE 3</button>
+        <button id="vs-refresh" class="v-btn" type="button">↻ TOPOLOGIE</button>
+      </div>
+    </header>
+
+    <section class="tx-panel radar-map">
+      <div class="radar-title">
+        <span>3-MONITOR TOPOLOGIE RADAR · LIVE CURSOR TRACKING</span>
+        <span id="vs-count">0 BILDSCHIRME ERKANNT</span>
+      </div>
+      <div id="vs-radar-stage" class="radar-stage"></div>
+    </section>
+
+    <main id="vs-grid" class="mon-grid"></main>
+    <div id="vs-ocr-out" class="ocr-box hidden"></div>
+
+    <footer class="tx-panel win-mover">
+      <span style="font-size:9.5px;color:var(--tx-dim);font-family:var(--fm);letter-spacing:0.16em;">FENSTER ROUTING:</span>
+      <select id="wm-select" class="win-sel"></select>
+      <button class="v-btn wm-go" data-mon="1" type="button">→ M1 LINKS</button>
+      <button class="v-btn wm-go" data-mon="2" type="button">→ M2 MITTE</button>
+      <button class="v-btn wm-go" data-mon="3" type="button">→ M3 RECHTS</button>
+      <button id="wm-reload" class="v-btn" type="button">↻ FENSTER</button>
+    </footer>
+  </div>
+
+  <script src="/static/beta_guard_ui.js"></script>
+  <script>
+    (function () {
+      try {
+        if (/arm|aarch64/i.test(navigator.platform || "") || /aarch64|armv/i.test(navigator.userAgent || "")) {
+          document.body.classList.add("perf-lite");
+        }
+      } catch (_e) {}
+
+      let monitors = [];
+      let activeMon = null;
+      let cursorMon = 1;
+      let lastMouse = { x: 0, y: 0, monitor: 1 };
+      let activeByMon = {};
+      let bounds = { minX: 0, minY: 0, spanW: 1920, spanH: 1080 };
+      const blobUrls = {};
+      const monLastTs = {};
+      const monFps = {};
+      const bc = "BroadcastChannel" in window ? new BroadcastChannel("jarvis_hud_sync_v1") : null;
+      const radarStage = document.getElementById("vs-radar-stage");
+      const grid = document.getElementById("vs-grid");
+      const ocrOut = document.getElementById("vs-ocr-out");
+
+      function isMonActive(idx) {
+        if (activeMon === "all") return true;
+        return Number(activeMon) === idx;
+      }
+
+      function updateCursorOverlays() {
+        const dot = document.getElementById("vs-cursor-dot");
+        if (dot && monitors.length) {
+          const px = Math.max(1, Math.min(99, ((lastMouse.x - bounds.minX) / bounds.spanW) * 100));
+          const py = Math.max(4, Math.min(96, ((lastMouse.y - bounds.minY) / bounds.spanH) * 100));
+          dot.style.left = `${px.toFixed(2)}%`;
+          dot.style.top = `${py.toFixed(2)}%`;
+          dot.style.display = "block";
+        }
+        monitors.forEach((m) => {
+          const isC = Number(m.index) === Number(cursorMon);
+          const rectEl = document.getElementById(`radar-mon-${m.index}`);
+          const cardEl = document.getElementById(`sm-card-${m.index}`);
+          const pillEl = document.getElementById(`sm-cursor-${m.index}`);
+          const crossEl = document.getElementById(`sm-cross-${m.index}`);
+          if (rectEl) rectEl.classList.toggle("cursor-active", isC);
+          if (cardEl) cardEl.classList.toggle("cursor-active", isC);
+          if (pillEl) pillEl.classList.toggle("hidden", !isC);
+          if (crossEl && isC && m.w > 0 && m.h > 0) {
+            const rx = Math.max(4, Math.min(96, ((lastMouse.x - m.x) / m.w) * 100));
+            const ry = Math.max(4, Math.min(96, ((lastMouse.y - m.y) / m.h) * 100));
+            crossEl.style.left = `${rx.toFixed(1)}%`;
+            crossEl.style.top = `${ry.toFixed(1)}%`;
+          }
+        });
+      }
+
+      function showOcrOverlay(monId, statusText, contentText) {
+        const ov = document.getElementById(`sm-ocr-ov-${monId}`);
+        const st = document.getElementById(`sm-ocr-st-${monId}`);
+        const bd = document.getElementById(`sm-ocr-bd-${monId}`);
+        if (ov && st && bd) {
+          st.textContent = statusText;
+          bd.textContent = contentText;
+          ov.classList.remove("hidden");
+        }
+      }
+
+      function renderMonitors() {
+        document.getElementById("vs-count").textContent = `${monitors.length} BILDSCHIRM${monitors.length === 1 ? "" : "E"} ERKANNT`;
+        if (!monitors.length) {
+          radarStage.innerHTML = "";
+          grid.innerHTML = "";
+          return;
+        }
+        const minX = Math.min(...monitors.map((m) => m.x));
+        const minY = Math.min(...monitors.map((m) => m.y));
+        const maxX = Math.max(...monitors.map((m) => m.x + m.w));
+        const maxY = Math.max(...monitors.map((m) => m.y + m.h));
+        bounds = { minX, minY, spanW: Math.max(1, maxX - minX), spanH: Math.max(1, maxY - minY) };
+
+        radarStage.innerHTML = monitors.map((m) => {
+          const left = ((m.x - minX) / bounds.spanW) * 100;
+          const top = ((m.y - minY) / bounds.spanH) * 100;
+          const width = (m.w / bounds.spanW) * 100;
+          const height = (m.h / bounds.spanH) * 100;
+          const act = isMonActive(m.index) ? "scanning" : "";
+          const cur = Number(m.index) === Number(cursorMon) ? "cursor-active" : "";
+          return `<div id="radar-mon-${m.index}" class="mon-rect ${act} ${cur}" data-ping="${m.index}" style="left:${left.toFixed(2)}%;top:${top.toFixed(2)}%;width:${width.toFixed(2)}%;height:${height.toFixed(2)}%;">
+            <b>M${m.index} · ${String(m.pos || "").toUpperCase()}</b><span>${m.w}×${m.h}</span>
+          </div>`;
+        }).join("") + `<div id="vs-cursor-dot" class="radar-cursor-dot" style="display:none;"></div>`;
+
+        if (grid.children.length !== monitors.length) {
+          grid.innerHTML = monitors.map((m) => `
+            <article class="tx-panel mon-card" id="sm-card-${m.index}">
+              <div class="mon-card-head">
+                <div class="mon-head-left">
+                  <b>M${m.index} · ${String(m.pos || "").toUpperCase()}</b>
+                  <span style="color:var(--tx-dim);">${m.w}×${m.h}</span>
+                  <span id="sm-fps-${m.index}" class="mon-fps">-- FPS</span>
+                  <span id="sm-cursor-${m.index}" class="cam-cursor-pill hidden">ACTIVE CURSOR TARGET</span>
+                </div>
+                <div class="mon-card-btns">
+                  <button class="v-btn" data-ping="${m.index}" type="button">PING</button>
+                  <button class="v-btn hot" data-ocr="${m.index}" type="button">OCR / VISION</button>
+                </div>
+              </div>
+              <div class="mon-img-wrap">
+                <img id="sm-img-${m.index}" src="/api/monitor_preview/${m.index}.jpg?t=${Date.now()}" alt="M${m.index}" />
+                <i class="mon-ret tl"></i><i class="mon-ret tr"></i><i class="mon-ret bl"></i><i class="mon-ret br"></i>
+                <i id="sm-cross-${m.index}" class="sm-crosshair"></i>
+                <div class="mon-scanbar"></div>
+                <div id="sm-ocr-ov-${m.index}" class="ocr-hud-overlay hidden">
+                  <div class="ocr-hud-top">
+                    <span id="sm-ocr-st-${m.index}">VISION / OCR DETECTION · M${m.index}</span>
+                    <button class="ocr-close-btn" data-ocr-close="${m.index}" type="button">✕</button>
+                  </div>
+                  <div id="sm-ocr-bd-${m.index}" class="ocr-hud-body"></div>
+                </div>
+              </div>
+              <div class="mon-foot">
+                <span id="sm-win-${m.index}" class="mon-foot-win">${activeByMon[String(m.index)] || "Desktop"}</span>
+                <span>OFFSET ${m.x},${m.y}</span>
+              </div>
+            </article>
+          `).join("");
+
+          document.querySelectorAll("[data-ocr-close]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const ov = document.getElementById(`sm-ocr-ov-${btn.dataset.ocrClose}`);
+              if (ov) ov.classList.add("hidden");
+            });
+          });
+
+          document.querySelectorAll("[data-ocr]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              const id = Number(btn.dataset.ocr);
+              const card = document.getElementById(`sm-card-${id}`);
+              if (card) card.classList.add("scanning");
+              ocrOut.classList.remove("hidden");
+              ocrOut.textContent = `[VISION SCAN M${id}] Analysiere Monitor ${id} in voller Original-Auflösung…`;
+              showOcrOverlay(id, `SCANNING M${id} · FULL-RES OCR…`, "Erkenne Text, Fenster und UI-Elemente…");
+              const r = await fetch("/api/monitors/ocr", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ monitor: id }),
+              }).then((x) => x.json()).catch(() => null);
+              if (card && !isMonActive(id)) card.classList.remove("scanning");
+              const txt = r ? (r.analysis || r.message || "Keine Erkennung.") : "OCR-Aufruf fehlgeschlagen.";
+              ocrOut.textContent = `[OCR / VISION M${id}] ${txt}`;
+              showOcrOverlay(id, `VISION DETECTION COMPLETE · M${id}`, txt);
+            });
+          });
+        }
+
+        monitors.forEach((m) => {
+          const card = document.getElementById(`sm-card-${m.index}`);
+          if (card) card.classList.toggle("scanning", isMonActive(m.index));
+        });
+
+        document.querySelectorAll("[data-ping]").forEach((el) => {
+          el.addEventListener("click", () => triggerHighlight(el.dataset.ping));
+        });
+        updateCursorOverlays();
+      }
+
+      async function triggerHighlight(target) {
+        const monVal = target === "all" ? "all" : Number(target);
+        activeMon = monVal;
+        renderMonitors();
+        await fetch("/api/monitors/highlight", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ monitor: monVal, label: `MATRIX PING M${String(target).toUpperCase()}`, duration: 2.2 }),
+        }).catch(() => {});
+        setTimeout(() => {
+          if (activeMon === monVal) { activeMon = null; renderMonitors(); }
+        }, 2300);
+      }
+
+      async function loadMonitors() {
+        const r = await fetch("/api/monitors").then((x) => x.json()).catch(() => null);
+        if (r && r.monitors) {
+          monitors = r.monitors;
+          activeMon = r.active_monitor ?? null;
+          renderMonitors();
+        }
+      }
+
+      async function loadWindows() {
+        const r = await fetch("/api/windows/list").then((x) => x.json()).catch(() => null);
+        const sel = document.getElementById("wm-select");
+        if (r && r.windows) {
+          sel.innerHTML = r.windows.map((w) => `<option value="${String(w.title).replace(/"/g, "&quot;")}">${w.title.slice(0, 68)}</option>`).join("");
+        }
+      }
+
+      document.getElementById("vs-fps-range").addEventListener("input", async (ev) => {
+        const fps = Number(ev.target.value || 12);
+        const numEl = document.getElementById("vs-fps-num");
+        if (numEl) numEl.textContent = String(fps);
+        await fetch("/api/monitors/stream_config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fps }),
+        }).catch(() => {});
+      });
+      document.getElementById("vs-scan-all").addEventListener("click", () => triggerHighlight("all"));
+      document.getElementById("vs-refresh").addEventListener("click", loadMonitors);
+      document.getElementById("wm-reload").addEventListener("click", loadWindows);
+      document.querySelectorAll(".wm-go").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const title = document.getElementById("wm-select").value;
+          await fetch("/api/windows/move", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ window_title: title, monitor: Number(btn.dataset.mon), layout: "maximize" }),
+          });
+        });
+      });
+
+      function handleMsg(msg) {
+        if (!msg) return;
+        if ((msg.expired === true || msg.type === "beta_guard" || msg.beta_guard) && typeof window.__applyBetaGuardState === "function") {
+          if (window.__applyBetaGuardState(msg)) return;
+        }
+        if (!msg.type) return;
+        if (msg.type === "snapshot" && msg.data) {
+          if (msg.data.beta_guard && typeof window.__applyBetaGuardState === "function") window.__applyBetaGuardState(msg.data.beta_guard);
+          if (msg.data.monitors) monitors = msg.data.monitors;
+          if (msg.data.brain_activity) activeMon = msg.data.brain_activity.active_monitor;
+          if (msg.data.telemetry) {
+            if (msg.data.telemetry.active_by_monitor) activeByMon = msg.data.telemetry.active_by_monitor;
+            if (msg.data.telemetry.mouse) {
+              lastMouse = msg.data.telemetry.mouse;
+              cursorMon = Number(lastMouse.monitor || 1);
+            }
+          }
+          renderMonitors();
+        } else if (msg.type === "telemetry" && msg.data) {
+          if (msg.data.mouse) {
+            lastMouse = msg.data.mouse;
+            cursorMon = Number(lastMouse.monitor || 1);
+            document.getElementById("vs-mouse").textContent = `CURSOR: ${lastMouse.x}, ${lastMouse.y} · M${cursorMon}`;
+            updateCursorOverlays();
+          }
+          if (msg.data.active_by_monitor) {
+            activeByMon = msg.data.active_by_monitor;
+            Object.entries(activeByMon).forEach(([k, val]) => {
+              const el = document.getElementById(`sm-win-${k}`);
+              if (el) el.textContent = val;
+            });
+          }
+        } else if (msg.type === "monitor_topology") {
+          monitors = msg.monitors || monitors;
+          activeMon = msg.active_monitor;
+          renderMonitors();
+        } else if (msg.type === "brain_activity") {
+          activeMon = msg.state === "screen_scan" ? (msg.active_monitor || null) : null;
+          renderMonitors();
+        }
+      }
+
+      if (bc) bc.onmessage = (ev) => handleMsg(ev.data);
+
+      function connectWs() {
+        const proto = location.protocol === "https:" ? "wss:" : "ws:";
+        const ws = new WebSocket(`${proto}//${location.host}/ws`);
+        ws.onmessage = (ev) => { try { handleMsg(JSON.parse(ev.data)); } catch (_e) {} };
+        ws.onclose = () => setTimeout(connectWs, 1800);
+      }
+
+      function connectBinaryFrames() {
+        const proto = location.protocol === "https:" ? "wss:" : "ws:";
+        const bws = new WebSocket(`${proto}//${location.host}/ws/monitors`);
+        bws.binaryType = "arraybuffer";
+        bws.onmessage = (evt) => {
+          if (!(evt.data instanceof ArrayBuffer) || evt.data.byteLength < 8) return;
+          const view = new DataView(evt.data);
+          if (view.getUint8(0) !== 74 || view.getUint8(1) !== 77) return;
+          const monIdx = view.getUint8(2);
+          const flags = view.getUint8(3);
+          const scanning = (flags & 1) !== 0;
+          const isCursor = (flags & 2) !== 0;
+          const fps = (view.getUint16(4, true) / 10.0).toFixed(1);
+
+          const now = performance.now();
+          if (monLastTs[monIdx]) {
+            const inst = Math.min(60, 1000 / Math.max(12, now - monLastTs[monIdx]));
+            monFps[monIdx] = monFps[monIdx] ? monFps[monIdx] * 0.7 + inst * 0.3 : inst;
+          }
+          monLastTs[monIdx] = now;
+          const perEl = document.getElementById(`sm-fps-${monIdx}`);
+          if (perEl) perEl.textContent = `${(monFps[monIdx] || Number(fps)).toFixed(1)} FPS`;
+          document.getElementById("vs-fps-badge").textContent = `${fps} FPS · WS (M${monIdx} ${isCursor ? "CURSOR" : "BG"})`;
+
+          const blob = new Blob([evt.data.slice(6)], { type: "image/jpeg" });
+          const nextUrl = URL.createObjectURL(blob);
+          const img = document.getElementById(`sm-img-${monIdx}`);
+          const card = document.getElementById(`sm-card-${monIdx}`);
+          if (img) {
+            img.src = nextUrl;
+            if (blobUrls[monIdx]) URL.revokeObjectURL(blobUrls[monIdx]);
+            blobUrls[monIdx] = nextUrl;
+          } else {
+            URL.revokeObjectURL(nextUrl);
+          }
+          if (card) card.classList.toggle("scanning", scanning || isMonActive(monIdx));
+          if (isCursor && cursorMon !== monIdx) {
+            cursorMon = monIdx;
+            updateCursorOverlays();
+          }
+        };
+        bws.onclose = () => setTimeout(connectBinaryFrames, 2000);
+      }
+
+      connectWs();
+      connectBinaryFrames();
+      loadMonitors();
+      loadWindows();
+    })();
+  </script>
+</body>
+</html>

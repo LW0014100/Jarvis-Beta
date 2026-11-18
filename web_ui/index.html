@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#050608" />
+  <title>JARVIS // TACTICAL SPATIAL OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/hud-nextgen.css" />
+  <link rel="stylesheet" href="/static/liquid-bento.css" />
+  <link rel="stylesheet" href="/static/tactical-os.css" />
+</head>
+<body>
+  <!-- ============================================================
+       OUTER SCI-FI HUD FRAME (Cockpit Bezel with Notches)
+  ============================================================ -->
+  <div class="hud-outer-frame">
+    <!-- Corner Tech Brackets -->
+    <div class="hud-bracket tl"></div>
+    <div class="hud-bracket tr"></div>
+    <div class="hud-bracket bl"></div>
+    <div class="hud-bracket br"></div>
+
+    <!-- Side Inward Chevron Notches -->
+    <div class="hud-notch-side notch-left" aria-hidden="true"></div>
+    <div class="hud-notch-side notch-right" aria-hidden="true"></div>
+
+    <!-- Inner Application Content -->
+    <div class="app">
+
+      <!-- ============================================================
+           TOPBAR HEADER (44px)
+      ============================================================ -->
+      <header class="topbar">
+        <div class="tb-left">
+          <h1 class="brand">JARVIS <span class="sl">//</span> NEURAL CORE</h1>
+          <span id="conn-mode-badge" class="mode-badge-live">LIVE</span>
+          <button id="beta-version-badge" class="beta-badge" type="button" title="Public Beta v0.1 – Open Access (Audio-Check &amp; Info)">PUBLIC BETA v0.1</button>
+          <span id="beta-expiry-pill" class="beta-expiry-pill" title="Laufzeit der Public Beta">BETA ACTIVE · GÜLTIG BIS 01.02.2027</span>
+          <span class="key-hints" aria-hidden="true"><kbd>F9 CLEAN</kbd><kbd>F10 SHOW</kbd></span>
+        </div>
+
+        <div class="tb-center">
+          <div class="model-badge" title="Aktives KI-Modell">
+            <span class="mb-k">MODEL:</span>
+            <b id="model-name" class="mb-v">INITIALISIERE…</b>
+            <select id="model-dropdown" class="model-dropdown" title="Schnellwahl primäres KI-Modell">
+              <option value="auto">⚡ AUTO (Kaskade #1-#5)</option>
+              <option value="gemini">Google Gemini (Auto-Modell)</option>
+              <option value="groq">Groq (Auto-Modell)</option>
+              <option value="openrouter">OpenRouter Free</option>
+              <option value="deepseek">DeepSeek V3</option>
+              <option value="pollinations">Pollinations AI (Free)</option>
+              <option value="ollama">Ollama Lokal</option>
+            </select>
+          </div>
+          <div id="core-mode-switch" class="core-mode-switch" role="group" aria-label="Core-Ansicht umschalten">
+            <button id="btn-core-classic" class="cms-btn active" data-core-mode="classic" type="button" title="Bewährtes Jarvis Classic Core Design (0 % WebGL-Last)">CLASSIC CORE</button>
+            <button id="btn-core-neural" class="cms-btn" data-core-mode="neural" type="button" title="Futuristisches 3D-Neural-Gehirn im Hauptfenster anzeigen">NEURAL 3D</button>
+            <button id="btn-pop-neural-core" class="cms-pop" type="button" title="3D-Neural-Gehirn als separates Fenster (/neural-core) öffnen">↗ Extra-Fenster</button>
+          </div>
+        </div>
+
+        <div class="tb-right">
+          <button id="btn-beta-feedback" class="beta-feedback-btn" type="button" title="Beta-Feedback oder Bug-Report speichern">[ 💬 BETA-FEEDBACK ]</button>
+          <span id="mode-label" class="mode-label on">ONLINE MODE</span>
+          <div id="mode-switch" class="pill-switch on" role="switch" aria-checked="true" tabindex="0" title="Online- / Offline-Modus umschalten">
+            <span class="knob"></span>
+          </div>
+
+          <button id="btn-net" class="icon-btn" type="button" title="System-Netzwerk-Ansicht" aria-label="System-Netzwerk">
+            <svg viewBox="0 0 24 24"><path d="M4 7h9.2a3 3 0 1 1 0 2H4V7Zm16 8h-9.2a3 3 0 1 0 0 2H20v-2ZM4 15h3v2H4v-2Zm13-8h3v2h-3V7Z"/></svg>
+          </button>
+
+          <button id="btn-settings" class="icon-btn" type="button" title="Einstellungen" aria-label="Einstellungen">
+            <svg viewBox="0 0 24 24"><path d="M19.14 12.94a7.9 7.9 0 0 0 .06-.94 7.9 7.9 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.3 7.3 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.58.23-1.12.54-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.9 7.9 0 0 0-.06.94 7.9 7.9 0 0 0 .06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.04.71 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.12-.54 1.62-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"/></svg>
+          </button>
+
+          <div class="menu-wrap">
+            <button id="btn-power" class="icon-btn" type="button" title="Minimieren / Beenden" aria-label="Power">
+              <svg viewBox="0 0 24 24"><path d="M11 2h2v10h-2V2Zm6.36 2.64-1.42 1.42A7 7 0 1 1 8.06 6.06L6.64 4.64a9 9 0 1 0 10.72 0Z"/></svg>
+            </button>
+            <div id="power-menu" class="menu hidden">
+              <button id="menu-min" type="button">Minimieren</button>
+              <button id="menu-exit" type="button" class="danger">Jarvis beenden</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ============================================================
+           OFFLINE PREVIEW LEISTE (Nur sichtbar ohne aktives Backend)
+      ============================================================ -->
+      <section id="offline-preview-bar" class="offline-preview-bar" aria-label="Offline Preview Steuerung">
+        <span class="op-label">OFFLINE PREVIEW · LOKALES BACKEND GETRENNT</span>
+        <div class="op-chips">
+          <button class="wh-chip" data-web-demo="listening" type="button">Audio</button>
+          <button class="wh-chip" data-web-demo="thinking" type="button">Neural</button>
+          <button class="wh-chip" data-web-demo="screen_scan" type="button">3x Scan</button>
+          <button class="wh-chip" data-web-demo="n8n" type="button">n8n Surge</button>
+          <button class="wh-chip" data-web-demo="show10s" type="button">Sequenz (F10)</button>
+          <button class="wh-chip" data-web-demo="showcase" type="button">Clean (F9)</button>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           3-COLUMN COMMAND CENTER GRID (29% | 43% | 28%)
+      ============================================================ -->
+      <main class="grid">
+
+        <!-- ======================= LEFT COLUMN ======================= -->
+        <section class="col col-left">
+
+          <!-- CARD 1: SPEECH / AUDIO INPUT -->
+          <article class="panel p-speech">
+            <div class="ph">
+              <span class="pt">SPEECH / AUDIO INPUT</span>
+              <span class="ph-sound-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M3 10v4h2v-4H3Zm4-3v10h2V7H7Zm4-4v16h2V3h-2Zm4 4v10h2V7h-2Zm4 3v4h2v-4h-2Z"/></svg>
+              </span>
+            </div>
+
+            <!-- Oscilloscope Waveform & Mic Icon -->
+            <div class="speech-top-block">
+              <div class="mic-glyph" title="Mikrofon-Aktivität">
+                <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg>
+              </div>
+              <div class="wave-canvas-wrap">
+                <canvas id="cv-wave"></canvas>
+                <div class="vad-sub-row">
+                  <span id="val-vad" class="vad-text active">VAD ACTIVE</span>
+                  <span id="val-level" class="vad-level-pct">0%</span>
+                  <div id="vad-seg" class="vad-seg hidden"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Frequency Spectrum Analyzer Bars -->
+            <div class="spectrum-block">
+              <canvas id="cv-spectrum"></canvas>
+              <canvas id="cv-level" class="hidden"></canvas>
+            </div>
+
+            <!-- 5 Parameter / Telemetry Bars with Icons -->
+            <div class="audio-meters-list">
+              <div class="am-row">
+                <span class="am-ico"><svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/></svg></span>
+                <div class="am-bar continuous"><span id="am-bar-1" class="bar-fill" style="width: 65%;"></span></div>
+              </div>
+              <div class="am-row">
+                <span class="am-ico"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></span>
+                <div class="am-bar continuous"><span id="am-bar-2" class="bar-fill" style="width: 82%;"></span></div>
+              </div>
+              <div class="am-row">
+                <span class="am-ico"><svg viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg></span>
+                <div id="am-seg-1" class="am-bar segmented">
+                  <!-- Generated by JS: 16 LED blocks -->
+                </div>
+              </div>
+              <div class="am-row">
+                <span class="am-ico"><svg viewBox="0 0 24 24"><path d="M4 18h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1s.45 1 1 1zm0-5h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1s.45 1 1 1zM3 7c0 .55.45 1 1 1h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1z"/></svg></span>
+                <div class="am-bar continuous"><span id="am-bar-3" class="bar-fill" style="width: 50%;"></span></div>
+              </div>
+              <div class="am-row">
+                <span class="am-ico"><svg viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2z"/></svg></span>
+                <div id="am-seg-2" class="am-bar segmented">
+                  <!-- Generated by JS: 16 LED blocks -->
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- CARD 2: SYSTEM-LOGS (STT / TRANSCRIPT & JARVIS REPLY) -->
+          <article class="panel p-syslogs">
+            <div class="ph">
+              <span class="pt">SYSTEM-LOGS</span>
+              <span class="vent-stripes" aria-hidden="true"></span>
+            </div>
+
+            <!-- Box 1: STT / TRANSCRIPT -->
+            <div class="log-tile log-tile-stt">
+              <div class="lt-head">
+                <span class="lt-title">STT / TRANSCRIPT</span>
+                <span class="lt-dots">•••</span>
+              </div>
+              <div id="stt-transcript-text" class="lt-body">
+                Warte auf Sprachbefehl („Jarvis …“) …
+              </div>
+            </div>
+
+            <!-- Box 2: JARVIS REPLY (Warm Copper Glowing Box) -->
+            <div class="log-tile log-tile-reply">
+              <div class="lt-head">
+                <span class="lt-title">JARVIS REPLY</span>
+                <span class="lt-dots">•••</span>
+              </div>
+              <div id="jarvis-reply-text" class="lt-body">
+                Systeme stehen auf Grün. Alle Subsysteme nominal.
+              </div>
+            </div>
+
+            <!-- Collapsible / Background Dialog history fallback container for accessibility / state -->
+            <div id="dialog-stream" class="dialog-stream hidden">
+              <div id="dialog-placeholder" class="msg ph-msg hidden"></div>
+            </div>
+            <div id="log-box" class="log-box hidden"></div>
+            <span id="log-count" class="hidden">0</span>
+          </article>
+
+          <!-- CARD 3: LOKALE N8N WORKFLOW BRIDGE (UNABHÄNGIGE INTEGRATION) -->
+          <article class="panel p-n8n" id="n8n-bento-panel">
+            <div class="ph">
+              <span class="pt">N8N // WORKFLOW BRIDGE (UNABHÄNGIG)</span>
+              <span id="n8n-status-badge" class="n8n-badge">BEREIT</span>
+            </div>
+            <div class="n8n-bento-body">
+              <div class="n8n-meta-row">
+                <span id="n8n-mode-lbl" class="n8n-meta-txt">PORT 5678 · UNABHÄNGIGE LOKALE BRIDGE</span>
+                <b id="n8n-wf-count" class="n8n-wf-count">0 FLOWS</b>
+              </div>
+              <div id="n8n-last-event" class="n8n-last-event">Bereit für Sprachbefehl oder Webhook-Trigger.</div>
+              <div class="n8n-action-row">
+                <input id="n8n-goal-input" class="n8n-input" type="text" placeholder="Neuer Workflow (z. B. Webhook -> HTTP)…" autocomplete="off" />
+                <button id="btn-n8n-create" class="mini-btn" type="button" title="Workflow per KI bauen &amp; aktivieren">⚡ BAUEN</button>
+                <button id="btn-n8n-run" class="mini-btn" type="button" title="Aktiven Webhook ausführen">▶ RUN</button>
+                <button id="btn-n8n-open" class="mini-btn" type="button" title="n8n Editor öffnen (localhost:5678)">↗ UI</button>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <!-- ======================= CENTER COLUMN ======================= -->
+        <section class="col col-center">
+          <article class="panel p-core">
+            <!-- Trapezoid Header Badge: CORE STATUS -->
+            <div class="core-header-badge">
+              <span class="chb-text">CORE STATUS</span>
+            </div>
+
+            <!-- Main Interactive Holographic Core Stage -->
+            <div id="core-stage" class="core-stage" title="Klicken = manuell zuhören (Push-to-Talk)">
+              <!-- Präzise Eck-Reticles für Tactical Spatial OS -->
+              <i class="core-reticle tl" aria-hidden="true"></i>
+              <i class="core-reticle tr" aria-hidden="true"></i>
+              <i class="core-reticle bl" aria-hidden="true"></i>
+              <i class="core-reticle br" aria-hidden="true"></i>
+              <!-- 60 FPS Canvas: Fibonacci particle orb + Arc Reactor Rings + Arcs + Degree Ticks + Center Typography -->
+              <canvas id="cv-core" aria-hidden="true"></canvas>
+              <!-- Three.js / WebGL 3D Neural Core Overlay -->
+              <canvas id="cv-brain-3d" class="brain-3d-canvas" aria-hidden="true"></canvas>
+              <!-- Dynamische Scan-Projektionslinien zu den 3 Monitor-Widgets -->
+              <svg id="scan-beams-svg" class="scan-beams-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <line id="scan-beam-1" class="scan-beam-line" x1="50" y1="50" x2="32" y2="11" />
+                <line id="scan-beam-2" class="scan-beam-line" x1="50" y1="50" x2="50" y2="11" />
+                <line id="scan-beam-3" class="scan-beam-line" x1="50" y1="50" x2="68" y2="11" />
+              </svg>
+              <!-- 3 Monitor-Widgets im Core HUD -->
+              <div id="core-monitor-dock" class="core-monitor-dock">
+                <button class="mon-widget" id="mon-widget-1" data-mon-scan="1" type="button"><i></i><span>M1 LINKS</span></button>
+                <button class="mon-widget" id="mon-widget-2" data-mon-scan="2" type="button"><i></i><span>M2 MITTE</span></button>
+                <button class="mon-widget" id="mon-widget-3" data-mon-scan="3" type="button"><i></i><span>M3 RECHTS</span></button>
+              </div>
+              <!-- Cinematic Live-Command-Bar (ohne Ton & im Hochformat gestochen scharf lesbar) -->
+              <div id="live-subtitle-bar" class="live-subtitle-bar">
+                <div class="sub-row"><span class="sub-tag user">USER</span><span id="sub-user-txt" class="sub-txt">Bereit für Sprachbefehl („Jarvis …“)</span></div>
+                <div class="sub-row"><span class="sub-tag action">ACTION</span><span id="sub-action-txt" class="sub-txt">NEURAL CORE · STANDBY</span></div>
+                <div id="cmd-steps" class="cmd-steps" aria-live="polite">
+                  <span class="cmd-step voice">CORE // BEREIT</span>
+                  <span class="cmd-step window">3-MON VISION // AKTIV</span>
+                </div>
+              </div>
+
+              <!-- Live-Telemetrie (Glas-Panel, oben links) -->
+              <div id="hud-telemetry" class="hud-glass hud-telemetry" aria-hidden="true">
+                <div class="hg-head"><span>LIVE-TELEMETRIE</span><i class="hg-led"></i></div>
+                <div class="tm-row"><span class="tm-k">CPU</span><span class="tm-bar"><i id="tm-cpu-b"></i></span><b id="tm-cpu-v" class="tm-v">0%</b></div>
+                <div class="tm-row"><span class="tm-k">RAM</span><span class="tm-bar"><i id="tm-ram-b"></i></span><b id="tm-ram-v" class="tm-v">0%</b></div>
+                <div class="tm-line"><span class="tm-k">TEMP</span><b id="tm-temp-v">--</b></div>
+                <div class="tm-line"><span class="tm-k">KI</span><b id="tm-prov-v">AUTO-KASKADE</b></div>
+                <div class="tm-line"><span class="tm-k">MODUS</span><b id="tm-mode-v">ONLINE</b></div>
+                <div class="tm-line"><span class="tm-k">LINK</span><b id="tm-link-v" class="tm-link off">GETRENNT</b></div>
+                <div class="tm-line"><span class="tm-k">LATENZ</span><b id="tm-lat-v">--</b></div>
+                <div class="tm-line"><span class="tm-k">FPS</span><b id="tm-fps-v">60</b></div>
+              </div>
+
+              <!-- Zustands-Chip & Show/Multi-Window Controls (oben rechts) -->
+              <div class="hud-state-stack">
+                <div class="hud-glass hud-state-chip" aria-hidden="true">
+                  <i class="dot"></i>
+                  <div class="chip-txt"><b id="hud-state-text">READY</b><small id="hud-state-sub">STANDBY</small></div>
+                </div>
+                <div class="hud-brain-controls" id="hud-brain-controls">
+                  <div class="hud-ctrl-row">
+                    <button id="btn-showcase-f9" class="btn-showcase-f9" type="button" title="Clean / Recording-Modus umschalten (Hotkey: F9)">CLEAN (F9)</button>
+                    <button id="btn-brain-demo" class="btn-brain-demo" type="button" title="Effekt-Zyklus testen">DEMO</button>
+                    <button id="btn-show-seq" class="btn-show-hidden" type="button" title="Showcase-Sequenz auslösen (F10 / F8)">◈</button>
+                  </div>
+                  <div class="popout-bar">
+                    <select id="popout-monitor-select" class="popout-mon-sel" title="Ziel-Monitor für Pop-out-Fenster">
+                      <option value="2">M2</option>
+                      <option value="1">M1</option>
+                      <option value="3">M3</option>
+                    </select>
+                    <button id="btn-pop-logs" class="popout-btn" type="button" title="Fenster 3: System-Telemetry, Live-Prozesse, n8n &amp; Ticker öffnen">⧉ TELEMETRY (F3)</button>
+                    <button id="btn-pop-vision" class="popout-btn" type="button" title="Fenster 2: 3-Monitor Screen-Matrix öffnen">⧉ MATRIX (F2)</button>
+                  </div>
+                </div>
+                <div id="hud-scan-badge" class="hud-scan-badge hidden">SCANNING MONITOR 1</div>
+              </div>
+
+              <!-- Chat- & Status-Log (Dark Glassmorphism, unten) -->
+              <div id="hud-chat" class="hud-glass hud-chat" title="Kommunikations-Log">
+                <div class="hg-head"><span>KOMMUNIKATIONS-LOG</span><span class="hg-count">MSG <b id="chat-count">00</b></span></div>
+                <div id="chat-log" class="chat-log"></div>
+              </div>
+
+              <!-- Top-Left Telemetry Scale (500-100) -->
+              <div class="hud-widget-tl" aria-hidden="true">
+                <div class="tl-bars">
+                  <span class="b-line b1"></span>
+                  <span class="b-line b2"></span>
+                  <span class="b-line b3"></span>
+                  <span class="b-line b4"></span>
+                </div>
+                <div class="tl-scale">
+                  <span>500</span>
+                  <span>400</span>
+                  <span>300</span>
+                  <span>200</span>
+                  <span>100</span>
+                </div>
+              </div>
+
+              <!-- Bottom-Left Fast Diagnostic Log Stream -->
+              <div class="hud-widget-bl" aria-hidden="true">
+                <div id="hud-diag-logs" class="diag-lines">
+                  <div class="dl">LOGS : 09YPR03KD07...</div>
+                  <div class="dl">LOGS : SOBWO1G9T...</div>
+                  <div class="dl">LOGS : 09OW09SFUNE...</div>
+                  <div class="dl">LOGS : SOCBD5B7...</div>
+                  <div class="dl">LOGS : SODBROV...</div>
+                  <div class="dl">LOGS : ENSPO4RAAI6...</div>
+                </div>
+              </div>
+
+              <!-- Bottom-Right Telemetry & Horizontal Meters -->
+              <div class="hud-widget-br" aria-hidden="true">
+                <div class="br-scale-wrap">
+                  <div class="br-labels">
+                    <span>2GM</span>
+                    <span>900</span>
+                    <span>500</span>
+                    <span>90K</span>
+                    <span>10V</span>
+                  </div>
+                  <div class="br-ticks">
+                    <span>100</span>
+                    <span>50</span>
+                    <span>0</span>
+                  </div>
+                </div>
+                <div class="br-meters">
+                  <div class="brm-row">
+                    <span class="brm-label">ACTIVITÄTEN</span>
+                    <div class="brm-bar"><span id="brm-act-bar" style="width: 68%;"></span></div>
+                  </div>
+                  <div class="brm-row">
+                    <span class="brm-label">ASTENINIEN</span>
+                    <span id="brm-speed" class="brm-val">9.38 M/s</span>
+                    <div class="brm-bar"><span id="brm-spd-bar" style="width: 42%;"></span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- State & Telemetry badges (compatible with app.js) -->
+              <div class="core-badges hidden" aria-hidden="true">
+                <div class="cbadge"><span class="k">PIPELINE</span><b id="cb-pipeline">CLOUD API</b></div>
+                <div class="cbadge"><span class="k">BUFFER</span><b id="cb-buffer">0.0s RAM</b></div>
+                <div class="cbadge"><span class="k">LATENCY</span><b id="cb-latency">0.00s</b></div>
+              </div>
+              <div class="core-reads hidden" aria-hidden="true">
+                <div class="rd"><span>CORE-LAST</span><b id="rd-core">0%</b></div>
+                <div class="rd"><span>BUFFER</span><b id="rd-buffer">0.0s</b></div>
+                <div class="rd"><span>SIGNAL</span><b id="rd-signal">0%</b></div>
+                <div class="rd"><span>LATENCY</span><b id="rd-latency">0.00s</b></div>
+              </div>
+            </div>
+
+            <!-- ECHTE LIVE-ÜBERWACHUNG ALLER 3 BILDSCHIRME (10-15 FPS BINÄR-WS) + EREIGNIS-TICKER -->
+            <div id="live-3screen-strip" class="live-3screen-strip">
+              <div class="l3s-head">
+                <span class="l3s-title">LIVE 3-SCREEN VISION</span>
+                <span id="live-mouse-xy" class="l3s-meta">MAUS: 0, 0 · M1</span>
+                <span id="live-mon-fps" class="l3s-meta">12 FPS</span>
+                <button id="btn-work-mode" class="mini-btn" type="button" title="Makro: Arbeitsmodus auf 3 Monitoren verteilen">⚡ ARBEITSMODUS</button>
+              </div>
+              <div class="l3s-grid" id="l3s-grid">
+                <div class="l3s-card" id="l3s-card-1" data-mon-focus="1" title="Klick = Fokus / Ping auf Monitor 1">
+                  <div class="l3s-card-top"><b>M1 · LINKS</b><span id="l3s-res-1">--</span></div>
+                  <img id="l3s-img-1" alt="Live Monitor 1" />
+                  <div id="l3s-win-1" class="l3s-win">Desktop</div>
+                </div>
+                <div class="l3s-card" id="l3s-card-2" data-mon-focus="2" title="Klick = Fokus / Ping auf Monitor 2">
+                  <div class="l3s-card-top"><b>M2 · MITTE</b><span id="l3s-res-2">--</span></div>
+                  <img id="l3s-img-2" alt="Live Monitor 2" />
+                  <div id="l3s-win-2" class="l3s-win">Desktop</div>
+                </div>
+                <div class="l3s-card" id="l3s-card-3" data-mon-focus="3" title="Klick = Fokus / Ping auf Monitor 3">
+                  <div class="l3s-card-top"><b>M3 · RECHTS</b><span id="l3s-res-3">--</span></div>
+                  <img id="l3s-img-3" alt="Live Monitor 3" />
+                  <div id="l3s-win-3" class="l3s-win">Desktop</div>
+                </div>
+              </div>
+              <div class="l3s-ticker" id="live-event-ticker">
+                <span class="l3s-t-tag">TICKER</span>
+                <span id="live-ticker-txt" class="l3s-t-txt">Live-Telemetry bereit.</span>
+              </div>
+            </div>
+
+            <!-- Bottom Ruler & Control Buttons -->
+            <div class="core-foot">
+              <div class="cv cv-ruler"><canvas id="cv-ruler"></canvas></div>
+              <div class="foot-btns">
+                <button id="btn-cam-info" class="foot-btn" type="button" title="Kamerabild analysieren lassen">
+                  <svg viewBox="0 0 24 24"><path d="M9 4 7.17 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.17L15 4H9Zm3 13a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Z"/></svg>
+                  <span>KAMERA INFO</span>
+                </button>
+                <button id="btn-mic" class="foot-btn" type="button" title="Mikrofon stummschalten / aktivieren">
+                  <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a1 1 0 1 0-2 0 3 3 0 1 1-6 0 1 1 0 1 0-2 0 5 5 0 0 0 4 4.9V19H8.5a1 1 0 1 0 0 2h7a1 1 0 1 0 0-2H13v-3.1A5 5 0 0 0 17 11Z"/></svg>
+                  <span id="mic-label">MIKROFON AKTIV</span>
+                </button>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <!-- ======================= RIGHT COLUMN ======================= -->
+        <section class="col col-right">
+
+          <!-- CARD 1: LARGE CIRCULAR CPU GAUGE -->
+          <article class="panel p-cpu-main">
+            <div class="gauge-big-wrap">
+              <canvas id="cv-gauge-cpu"></canvas>
+            </div>
+          </article>
+
+          <!-- CARD 2: SPLIT GAUGE (Left: 70% CPU ring | Right: RAM Sparkline, Temp, Values) -->
+          <article class="panel p-split-gauge">
+            <div class="sg-left">
+              <canvas id="cv-gauge-ram"></canvas>
+            </div>
+            <div class="sg-right">
+              <div class="sg-head">
+                <span class="sg-title">RAM</span>
+                <span id="sg-temp" class="sg-temp">TEMP: 53°C</span>
+              </div>
+              <div class="sg-wave">
+                <canvas id="cv-ch-ram"></canvas>
+              </div>
+              <div class="sg-metrics">
+                <span id="sg-m1" class="sg-m">10.2%</span>
+                <span id="sg-m2" class="sg-m">88%</span>
+                <span id="sg-m3" class="sg-m">0.5</span>
+                <span id="sg-m4" class="sg-m">TEMP: 53°C</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- CARD 3: NETZWERK PANEL -->
+          <article class="panel p-netzwerk">
+            <div class="ph">
+              <span class="pt">NETZWERK</span>
+              <span class="ph-net-bars" aria-hidden="true">
+                <i></i><i></i><i></i>
+              </span>
+            </div>
+            <div class="net-data-list">
+              <div class="nd-row">
+                <span class="nd-label">Datenübertragungs</span>
+                <b id="nd-down" class="nd-val">12.0 MB/s</b>
+              </div>
+              <div class="nd-row">
+                <span class="nd-label">Datenübertragung</span>
+                <b id="nd-up" class="nd-val">0.0 IB/s</b>
+              </div>
+              <div class="nd-row">
+                <span class="nd-label">Systemdaten</span>
+                <b id="nd-gpr" class="nd-val">1399.1 GPR</b>
+              </div>
+              <div class="nd-row">
+                <span class="nd-label">Systemdaten</span>
+                <b id="nd-rain" class="nd-val">56.9% RAain</b>
+              </div>
+            </div>
+          </article>
+
+          <!-- CARD 4: DESK CAM ACTIVE / LIVE DESKTOP VISION -->
+          <article class="panel p-cam">
+            <div class="ph">
+              <span class="pt" id="cam-panel-title">DESK CAM ACTIVE</span>
+              <div class="ph-cam-right">
+                <button id="btn-desktop-vision-toggle" class="hud-cam-btn desktop-on" type="button" title="Schaltet zwischen Webcam und Live-Desktop-Vision (Was Jarvis sieht) um">
+                  <span class="cam-icon">🖥️</span> <span id="desktop-vision-toggle-label">DESKTOP</span>
+                </button>
+                <button id="btn-cam-toggle" class="hud-cam-btn cam-on" type="button" title="Kamera-Sensor ausschalten / einschalten">
+                  <span class="cam-icon">📷</span> <span id="cam-toggle-label">CAM AUS</span>
+                </button>
+                <button id="btn-cam" class="live-pill" type="button" title="Kamera Live / Standby">
+                  <i class="live-dot"></i><span id="cam-live-text">LIVE</span>
+                </button>
+              </div>
+            </div>
+            <div class="cam-body">
+              <div class="cam-view">
+                <img id="cam-feed" src="/api/camera.mjpeg" alt="Desk Cam Live" />
+                <img id="desktop-vision-feed" class="hidden" alt="Live Desktop Vision (Was Jarvis sieht)" />
+                <!-- 3-Monitor-Kommando-Dock unten rechts (Tactical Cyber-Glass) -->
+                <div id="cam-3mon-grid" class="cam-3mon-grid">
+                  <div class="cam-mon-tile" id="cam-mon-1" data-mon-focus="1" title="Monitor 1 · Links (Klick = Fokus / Scan-Ping)">
+                    <div class="mon-feed">
+                      <img id="cam-mon-img-1" alt="Live Monitor 1" />
+                      <i class="mon-ret tl" aria-hidden="true"></i><i class="mon-ret tr" aria-hidden="true"></i>
+                      <i class="mon-ret bl" aria-hidden="true"></i><i class="mon-ret br" aria-hidden="true"></i>
+                      <i class="mon-crosshair" aria-hidden="true"></i>
+                      <div class="mon-scanbar" aria-hidden="true"></div>
+                    </div>
+                    <div class="mon-meta">
+                      <div class="mon-meta-top"><b>M1</b><span class="mon-pos">LINKS</span><span id="cam-mon-fps-1" class="mon-fps">-- FPS</span></div>
+                      <div id="cam-mon-res-1" class="mon-res">1920×1080</div>
+                      <div id="cam-mon-win-1" class="mon-win">Desktop</div>
+                      <span id="cam-mon-cursor-1" class="cam-cursor-pill hidden">ACTIVE CURSOR TARGET</span>
+                    </div>
+                  </div>
+                  <div class="cam-mon-tile" id="cam-mon-2" data-mon-focus="2" title="Monitor 2 · Mitte (Klick = Fokus / Scan-Ping)">
+                    <div class="mon-feed">
+                      <img id="cam-mon-img-2" alt="Live Monitor 2" />
+                      <i class="mon-ret tl" aria-hidden="true"></i><i class="mon-ret tr" aria-hidden="true"></i>
+                      <i class="mon-ret bl" aria-hidden="true"></i><i class="mon-ret br" aria-hidden="true"></i>
+                      <i class="mon-crosshair" aria-hidden="true"></i>
+                      <div class="mon-scanbar" aria-hidden="true"></div>
+                    </div>
+                    <div class="mon-meta">
+                      <div class="mon-meta-top"><b>M2</b><span class="mon-pos">MITTE</span><span id="cam-mon-fps-2" class="mon-fps">-- FPS</span></div>
+                      <div id="cam-mon-res-2" class="mon-res">3840×2160</div>
+                      <div id="cam-mon-win-2" class="mon-win">Desktop</div>
+                      <span id="cam-mon-cursor-2" class="cam-cursor-pill hidden">ACTIVE CURSOR TARGET</span>
+                    </div>
+                  </div>
+                  <div class="cam-mon-tile" id="cam-mon-3" data-mon-focus="3" title="Monitor 3 · Rechts (Klick = Fokus / Scan-Ping)">
+                    <div class="mon-feed">
+                      <img id="cam-mon-img-3" alt="Live Monitor 3" />
+                      <i class="mon-ret tl" aria-hidden="true"></i><i class="mon-ret tr" aria-hidden="true"></i>
+                      <i class="mon-ret bl" aria-hidden="true"></i><i class="mon-ret br" aria-hidden="true"></i>
+                      <i class="mon-crosshair" aria-hidden="true"></i>
+                      <div class="mon-scanbar" aria-hidden="true"></div>
+                    </div>
+                    <div class="mon-meta">
+                      <div class="mon-meta-top"><b>M3</b><span class="mon-pos">RECHTS</span><span id="cam-mon-fps-3" class="mon-fps">-- FPS</span></div>
+                      <div id="cam-mon-res-3" class="mon-res">1920×1080</div>
+                      <div id="cam-mon-win-3" class="mon-win">Desktop</div>
+                      <span id="cam-mon-cursor-3" class="cam-cursor-pill hidden">ACTIVE CURSOR TARGET</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="desktop-vision-badge" class="desktop-vision-badge hidden">🖥️ 3-MONITOR LIVE VISION (CURSOR-AWARE)</div>
+                <i class="chc tl"></i><i class="chc tr"></i><i class="chc bl"></i><i class="chc br"></i>
+                <div id="cam-paused" class="cam-paused hidden">KAMERA PAUSIERT</div>
+                <div id="cam-offline-overlay" class="cam-offline-overlay hidden">
+                  <div class="cam-offline-icon">📷⃠</div>
+                  <div class="cam-offline-text">CAMERA OFFLINE</div>
+                  <div class="cam-offline-sub">SENSOR HARDWARESEITIG DEAKTIVIERT</div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- CARD 5: LIVE-AGENTEN-MONITOR (4-AGENTEN-SCHWARM & NOT-STOPP) -->
+          <article class="panel p-agent-monitor" id="agent-monitor-panel">
+            <div class="ph">
+              <span class="pt">4-AGENTEN-SCHWARM // NAS</span>
+              <span id="nas-brain-badge" class="nas-brain-badge connected" title="2-Stufen Hybrid-Speicher (Laptop NVMe HotCache + Explorer HDD-NAS)">NVMe HOT-CACHE: OK // NAS HDD: SYNCED</span>
+              <span id="agent-autonomy-badge" class="agent-mode-badge mode-1">MODUS 1: SAFE</span>
+            </div>
+            <div class="agent-monitor-body">
+              <div class="swarm-cards-grid" id="swarm-cards-grid">
+                <div class="swarm-card" id="swarm-card-overmind">
+                  <div class="swarm-card-top">
+                    <span class="swarm-card-name">1 · OVERMIND</span>
+                    <span class="swarm-card-state" id="swarm-state-overmind">READY</span>
+                  </div>
+                  <div class="swarm-card-step" id="swarm-step-overmind">NAS-Gedächtnis &amp; Planer bereit</div>
+                </div>
+                <div class="swarm-card" id="swarm-card-desktop_video">
+                  <div class="swarm-card-top">
+                    <span class="swarm-card-name">2 · DESKTOP/VIDEO</span>
+                    <span class="swarm-card-state" id="swarm-state-desktop_video">IDLE</span>
+                  </div>
+                  <div class="swarm-card-step" id="swarm-step-desktop_video">1-FPS Vision &amp; NLE-Schnitt bereit</div>
+                </div>
+                <div class="swarm-card" id="swarm-card-web_ghost">
+                  <div class="swarm-card-top">
+                    <span class="swarm-card-name">3 · WEB GHOST</span>
+                    <span class="swarm-card-state" id="swarm-state-web_ghost">IDLE</span>
+                  </div>
+                  <div class="swarm-card-step" id="swarm-step-web_ghost">Browser, Tresor &amp; 2FA-IMAP bereit</div>
+                </div>
+                <div class="swarm-card" id="swarm-card-finance_quant">
+                  <div class="swarm-card-top">
+                    <span class="swarm-card-name">4 · FINANCE QUANT</span>
+                    <span class="swarm-card-state" id="swarm-state-finance_quant">IDLE</span>
+                  </div>
+                  <div class="swarm-card-step" id="swarm-step-finance_quant">Aktien/Krypto (MODUS 1: SAFE)</div>
+                </div>
+              </div>
+              <div id="agent-monitor-step" class="agent-step-box">[BEREIT] 4-Agenten-Schwarm &amp; NAS-Gehirn aktiv...</div>
+              <div id="smart-suggestion-banner" class="smart-suggestion-banner hidden" role="status" aria-live="polite">
+                <span id="smart-suggestion-text" class="smart-suggestion-text">💡 VORSCHLAG: Bereit...</span>
+                <div class="smart-suggestion-actions">
+                  <button id="btn-suggestion-confirm" class="smart-suggestion-btn confirm" type="button">[ ✓ MACH DAS ]</button>
+                  <button id="btn-suggestion-dismiss" class="smart-suggestion-btn dismiss" type="button" title="Ausblenden">✕</button>
+                </div>
+              </div>
+              <div class="swarm-actions-row">
+                <button id="btn-executive-briefing" class="exec-briefing-btn" type="button" title="Startet proaktives Executive Morning Briefing inkl. Browser-Cockpit">
+                  [ ⚡ EXECUTIVE BRIEFING ]
+                </button>
+                <button id="btn-swarm-cursor-toggle" class="swarm-cursor-toggle-btn is-on" type="button" aria-pressed="true" title="Schaltet das transparente 4-Mauszeiger-Overlay ein oder aus">
+                  [ ⚡ 4-CURSOR SWARM: ON ]
+                </button>
+                <button id="btn-kill-agent" class="kill-agent-btn" type="button" title="Stoppt alle 4 Agenten &amp; 4 Cursor sofort in 1 Millisekunde (Alternativ: ESC oder Maus in Bildschirmecke)">
+                  [ 🛑 ALLE AGENTEN STOPPEN ]
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Compatibility hidden containers for app.js telemetry aliases -->
+          <div class="hidden" aria-hidden="true">
+            <div class="tile tile-wide"><span class="k">PIPELINE</span><b id="tile-pipeline">CLOUD API</b></div>
+            <div class="tiles2">
+              <div class="tile"><span class="k">BUFFER</span><b id="tile-buffer">0.0s RAM</b><span class="tbar"><i id="tile-buffer-bar"></i></span></div>
+              <div class="tile"><span class="k">LATENCY</span><b id="tile-latency">0.00s</b><span class="tbar"><i id="tile-latency-bar"></i></span></div>
+            </div>
+            <b id="tv-cpu">0%</b><b id="tv-ram">0%</b><b id="tv-audio">0%</b><b id="tv-down">0 KB/s</b><b id="tv-up">0 KB/s</b>
+            <canvas id="cv-ch-cpu"></canvas><canvas id="cv-ch-audio"></canvas><canvas id="cv-ch-down"></canvas><canvas id="cv-ch-up"></canvas>
+            <span id="tt-cpu"></span><span id="tp-cpu"></span><span id="tt-ram"></span><span id="tp-ram"></span>
+            <span id="tt-temp"></span><span id="tp-temp"></span><span id="tt-net"></span><span id="tp-net"></span>
+            <span id="tt-disk"></span><span id="tp-disk"></span><span id="tt-fps"></span><span id="tp-fps"></span>
+            <span id="core-meta"></span><b id="cs-buffer"></b><b id="cs-fps"></b><b id="cs-latency"></b>
+            <span id="cam-live"></span>
+          </div>
+        </section>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SYSTEM-NETZWERK-OVERLAY (Schnell-Tab-Icon)
+  ============================================================ -->
+  <section id="net-overlay" class="net-overlay panel hidden">
+    <div class="ph">
+      <span class="pt">SYSTEM-NETZWERK // GEHIRN · HAND · STIMME</span>
+      <button id="net-close" class="mini-btn" type="button">SCHLIESSEN</button>
+    </div>
+    <div class="net-body">
+      <div class="cv net-cv"><canvas id="cv-net"></canvas></div>
+      <aside class="net-info">
+        <div class="ni"><span>HOST</span><b id="ni-host">--</b></div>
+        <div class="ni"><span>IPv4</span><b id="ni-ip">--</b></div>
+        <div class="ni"><span>NETZ</span><b id="ni-net">--</b></div>
+        <div class="ni"><span>UP / DOWN</span><b id="ni-io">--</b></div>
+        <div class="ni"><span>OLLAMA</span><b id="ni-ollama">--</b></div>
+        <div class="ni"><span>PROZESSE</span><b id="ni-proc">--</b></div>
+        <div class="ni"><span>SPEICHER FREI</span><b id="ni-disk">--</b></div>
+        <div class="ni-actions">
+          <button id="act-status" class="foot-btn" type="button">Status-Briefing</button>
+          <button id="act-alarm" class="foot-btn" type="button">Wecker prüfen</button>
+          <button id="act-cam" class="foot-btn" type="button">Kamera prüfen</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SETTINGS-MODAL (API-Keys, Ollama-Modelle, Wake-Word, Stimmen)
+  ============================================================ -->
+  <div id="settings-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-box panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="ph">
+        <span id="settings-title" class="pt">EINSTELLUNGEN // API-KEYS &amp; SYSTEM</span>
+        <button id="settings-close" class="mini-btn" type="button">✕ SCHLIESSEN</button>
+      </div>
+      <div class="s-tabs" role="tablist">
+        <button type="button" class="s-tab active" data-tab="ai" role="tab" aria-selected="true">KI &amp; API-KEYS</button>
+        <button type="button" class="s-tab" data-tab="vault" role="tab" aria-selected="false">🔐 TRESOR &amp; AUTONOMIE</button>
+        <button type="button" class="s-tab" data-tab="sys" role="tab" aria-selected="false">STIMME &amp; SYSTEM</button>
+        <button type="button" class="s-tab" data-tab="comm" role="tab" aria-selected="false">KOMMUNIKATION</button>
+        <button type="button" class="s-tab" data-tab="mobile" role="tab" aria-selected="false">📱 ANDROID APK</button>
+      </div>
+      <form id="settings-form" class="s-form">
+        <div id="settings-fields" class="s-grid"></div>
+        <div class="s-foot">
+          <span id="settings-feedback" class="s-feedback"></span>
+          <button type="submit" class="save-btn">SPEICHERN &amp; LIVE ÜBERNEHMEN</button>
+        </div>
+        <div style="font-size:10px;color:#8b97a8;padding:6px 14px 4px;border-top:1px solid rgba(255,255,255,0.06);">
+          Unabhängiges Open-Source-Softwareprojekt (MIT-Lizenz, ohne Gewährleistung) · Keine Verbindung zu Marvel, Disney, n8n oder anderen Markeninhabern.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PUBLIC BETA v0.1 STATUS & AUDIO-CHECK MODAL (OHNE KEY-SPERRE)
+  ============================================================ -->
+  <div id="license-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-box panel beta-modal-box" role="dialog" aria-modal="true" aria-labelledby="license-title">
+      <div class="ph">
+        <span id="license-title" class="pt">J.A.R.V.I.S. OS // PUBLIC BETA v0.1</span>
+        <button id="license-close" class="mini-btn" type="button">✕ SCHLIESSEN</button>
+      </div>
+      <div class="beta-modal-body">
+        <p class="beta-modal-sub" id="license-status-banner">
+          Public Beta v0.1 (Open Access) – keine Lizenz- oder Key-Sperre aktiv. Alle Funktionen stehen direkt zum Testen bereit.
+        </p>
+        <div class="beta-modal-actions">
+          <button id="btn-lic-audio" class="mini-btn" type="button">[ 🎤 AUDIO &amp; MIKROFON-CHECK ]</button>
+        </div>
+        <div id="lic-feedback-msg" class="beta-feedback-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       BETA FEEDBACK & BUG-REPORT MODAL
+  ============================================================ -->
+  <div id="feedback-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-box panel beta-modal-box" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
+      <div class="ph">
+        <span id="feedback-title" class="pt">PUBLIC BETA v0.1 // FEEDBACK &amp; BUG-REPORT</span>
+        <button id="feedback-close" class="mini-btn" type="button">✕ SCHLIESSEN</button>
+      </div>
+      <div class="beta-modal-body">
+        <div class="beta-form-row">
+          <label for="fb-category">KATEGORIE</label>
+          <select id="fb-category">
+            <option value="bug">Bug-Report / Fehler melden</option>
+            <option value="feature">Feature-Wunsch / Verbesserung</option>
+            <option value="feedback">Allgemeines Beta-Feedback</option>
+          </select>
+        </div>
+        <div class="beta-form-row">
+          <label for="fb-contact">KONTAKT (OPTIONAL)</label>
+          <input id="fb-contact" type="text" placeholder="Name oder E-Mail (optional)" autocomplete="off" />
+        </div>
+        <div class="beta-form-row">
+          <label for="fb-message">BESCHREIBUNG</label>
+          <textarea id="fb-message" rows="4" placeholder="Was hat gut funktioniert oder was sollen wir verbessern?"></textarea>
+        </div>
+        <div class="beta-modal-actions">
+          <button id="btn-fb-submit" class="save-btn" type="button">[ 📨 FEEDBACK SPEICHERN ]</button>
+        </div>
+        <div id="fb-feedback-msg" class="beta-feedback-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daten-Verbindungslinie: 3D-Neural-Core <-> Aktiver Ziel-Monitor im Dock unten rechts -->
+  <svg id="hud-link-layer" class="hud-link-layer" aria-hidden="true">
+    <path id="hl-cursor-path" class="hl-line hl-cursor" d="" />
+    <path id="hl-scan-path" class="hl-line hl-scan" d="" />
+    <circle id="hl-dot-brain" class="hl-dot" cx="0" cy="0" r="3.5" fill="#00F0FF" />
+    <circle id="hl-dot-mon" class="hl-dot" cx="0" cy="0" r="3.5" fill="#00F0FF" />
+  </svg>
+
+  <script src="/static/beta_guard_ui.js"></script>
+  <script src="/static/three.min.js"></script>
+  <script src="/static/neural_brain.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,696 @@
+/* ==========================================================================
+   J.A.R.V.I.S. // LIQUID GLASS & PRECISION BENTO DESIGN SYSTEM
+   Stil: Linear · Raycast · Apple Liquid Glass (Anti-AI-Template)
+   Palette: Obsidian #07080B | Platin #F4F7FB | Eis-Cyan #38BDF8 | Bernstein #F59E0B
+   ========================================================================== */
+
+:root {
+  --bg-obsidian: #07080B;
+  --bg-frame: #07080B;
+  --bg-dark: #07080B;
+  --bg-panel: rgba(14, 17, 24, 0.62);
+  --bg-panel-solid: #0D1017;
+  --bg-card-sub: rgba(20, 25, 36, 0.68);
+
+  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  --glass-border-hover: 1px solid rgba(255, 255, 255, 0.17);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.065);
+  --glass-shadow: 0 18px 42px rgba(0, 0, 0, 0.48), 0 2px 8px rgba(0, 0, 0, 0.35);
+
+  --text-platinum: #F4F7FB;
+  --c-text-head: #F4F7FB;
+  --c-text-body: #DCE3EE;
+  --c-text-dim: #94A3B8;
+  --c-text-muted: #5F6B7A;
+
+  --accent-cyan: #38BDF8;
+  --accent-amber: #F59E0B;
+  --accent-emerald: #34D399;
+
+  --fd: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --fm: "JetBrains Mono", "Geist Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+html, body {
+  background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.06), transparent 52%),
+              radial-gradient(circle at 82% 88%, rgba(245, 158, 11, 0.045), transparent 44%),
+              var(--bg-obsidian) !important;
+  color: var(--text-platinum);
+  font-family: var(--fd) !important;
+}
+
+/* Entferne alte Sci-Fi-Brackets, Notches & Lueftungsschlitze */
+.hud-bracket,
+.hud-notch-side,
+.vent-stripes,
+.hud-widget-tl,
+.hud-widget-bl,
+.hud-widget-br {
+  display: none !important;
+}
+
+.hud-outer-frame {
+  border: none !important;
+  background: transparent !important;
+  padding: 10px 14px !important;
+}
+
+.app {
+  gap: 10px !important;
+  height: 100%;
+}
+
+/* ==========================================================================
+   TOPBAR HEADER + BRAND PILL
+   ========================================================================== */
+.topbar {
+  height: 50px !important;
+  padding: 0 14px !important;
+  border-radius: 14px !important;
+  background: rgba(14, 17, 24, 0.72) !important;
+  backdrop-filter: blur(22px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(145%) !important;
+  border: var(--glass-border) !important;
+  box-shadow: var(--glass-highlight), 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+.brand {
+  font-family: var(--fd) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  color: var(--text-platinum) !important;
+}
+.brand .sl {
+  color: var(--accent-cyan) !important;
+}
+
+.mode-badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  background: rgba(16, 185, 129, 0.1);
+  color: #6EE7B7;
+}
+body.web-demo-mode .mode-badge-live {
+  border-color: rgba(245, 158, 11, 0.42);
+  background: rgba(245, 158, 11, 0.12);
+  color: #FCD34D;
+}
+
+/* ==========================================================================
+   LIQUID GLASS BENTO PANELS
+   ========================================================================== */
+.grid {
+  display: grid !important;
+  grid-template-columns: 27fr 46fr 27fr !important;
+  gap: 12px !important;
+}
+
+article.panel,
+.panel {
+  border-radius: 16px !important;
+  background: var(--bg-panel) !important;
+  backdrop-filter: blur(22px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(140%) !important;
+  border: var(--glass-border) !important;
+  box-shadow: var(--glass-highlight), var(--glass-shadow) !important;
+  clip-path: none !important;
+  transition: border-color 0.22s ease, transform 0.22s ease;
+}
+article.panel:hover {
+  border: var(--glass-border-hover) !important;
+}
+article.panel::before,
+article.panel::after {
+  display: none !important;
+}
+
+.ph {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding: 10px 14px 8px 14px !important;
+}
+.pt {
+  font-family: var(--fm) !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.1em !important;
+  color: var(--c-text-dim) !important;
+}
+
+.core-header-badge {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: var(--glass-border) !important;
+  border-radius: 999px !important;
+  padding: 4px 16px !important;
+  clip-path: none !important;
+  top: 12px !important;
+}
+.chb-text {
+  font-family: var(--fm) !important;
+  font-size: 10.5px !important;
+  letter-spacing: 0.14em !important;
+  color: var(--text-platinum) !important;
+}
+
+/* ==========================================================================
+   3D CORE STAGE + 3-MONITOR SCAN WIDGETS + LIVE SUBTITLES
+   ========================================================================== */
+.p-core {
+  background: radial-gradient(circle at 50% 45%, rgba(56, 189, 248, 0.08), rgba(14, 17, 24, 0.72) 68%) !important;
+}
+
+.core-stage {
+  position: relative;
+}
+
+.scan-beams-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 4;
+}
+.scan-beam-line {
+  stroke: var(--accent-amber);
+  stroke-width: 1.6;
+  stroke-dasharray: 5 5;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.85));
+}
+.scan-beam-line.active {
+  opacity: 0.92;
+  animation: beamDash 0.7s linear infinite;
+}
+@keyframes beamDash {
+  to { stroke-dashoffset: -20; }
+}
+
+.core-monitor-dock {
+  position: absolute;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+.mon-widget {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: rgba(14, 17, 24, 0.76);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: var(--c-text-dim);
+  font-family: var(--fm);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.mon-widget:hover {
+  border-color: rgba(56, 189, 248, 0.45);
+  color: var(--text-platinum);
+}
+.mon-widget.scanning {
+  border-color: var(--accent-amber);
+  background: rgba(245, 158, 11, 0.16);
+  color: #FEF3C7;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.35);
+}
+.mon-widget i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+}
+.mon-widget.scanning i {
+  background: var(--accent-amber);
+  box-shadow: 0 0 8px var(--accent-amber);
+}
+
+/* Live-Untertitel- / Command-Leiste (TikTok-optimiert) */
+.live-subtitle-bar {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 12px;
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(9, 11, 16, 0.82);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--glass-highlight), 0 10px 28px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+.sub-row {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+.sub-tag {
+  font-family: var(--fm);
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 5px;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+.sub-tag.user {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+.sub-tag.action {
+  background: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.32);
+}
+.sub-txt {
+  color: var(--text-platinum);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Showcase & Controls oben rechts */
+.hud-glass {
+  background: rgba(14, 17, 24, 0.72) !important;
+  backdrop-filter: blur(18px) !important;
+  border: var(--glass-border) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--glass-highlight) !important;
+}
+.btn-brain-demo,
+.popout-btn,
+.foot-btn,
+.mini-btn {
+  border-radius: 9px !important;
+  font-family: var(--fd) !important;
+  font-weight: 600 !important;
+  border: var(--glass-border) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-platinum) !important;
+  transition: all 0.18s ease !important;
+}
+.btn-brain-demo:hover,
+.popout-btn:hover,
+.foot-btn:hover,
+.mini-btn:hover {
+  border-color: rgba(56, 189, 248, 0.45) !important;
+  background: rgba(56, 189, 248, 0.12) !important;
+}
+.hud-ctrl-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-show-hidden {
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(244, 247, 251, 0.42);
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.btn-show-hidden:hover,
+.btn-show-hidden.active {
+  color: var(--accent-amber);
+  border-color: rgba(245, 158, 11, 0.55);
+  background: rgba(245, 158, 11, 0.14);
+}
+.btn-showcase-f9 {
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 9px;
+  border: var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--c-text-body);
+  font-family: var(--fm);
+  font-size: 10px;
+}
+.btn-showcase-f9.active {
+  border-color: var(--accent-cyan);
+  background: rgba(56, 189, 248, 0.18);
+  color: var(--text-platinum);
+}
+
+/* N8N BENTO KACHEL */
+.n8n-badge {
+  font-family: var(--fm);
+  font-size: 9.5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--accent-cyan);
+}
+.n8n-badge.online {
+  border-color: rgba(52, 211, 153, 0.45);
+  background: rgba(52, 211, 153, 0.12);
+  color: #6ee7b7;
+}
+.n8n-badge.busy {
+  border-color: rgba(245, 158, 11, 0.6);
+  background: rgba(245, 158, 11, 0.16);
+  color: #fcd34d;
+}
+.n8n-bento-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px 10px 12px;
+}
+.n8n-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--fm);
+  font-size: 10px;
+  color: var(--c-text-dim);
+}
+.n8n-wf-count {
+  color: var(--accent-amber);
+}
+.n8n-last-event {
+  font-size: 11px;
+  color: var(--c-text-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.n8n-action-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.n8n-input {
+  flex: 1;
+  min-width: 0;
+  background: rgba(7, 8, 11, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-platinum);
+  font-size: 11px;
+  padding: 5px 8px;
+}
+
+/* ==========================================================================
+   CLEAN / RECORDING MODUS (F9)
+   ========================================================================== */
+body.showcase-active .col-left,
+body.showcase-active .col-right,
+body.showcase-active .model-badge,
+body.showcase-active #btn-beta-feedback,
+body.showcase-active #beta-version-badge,
+body.showcase-active #btn-settings,
+body.showcase-active #btn-net,
+body.showcase-active #btn-power,
+body.showcase-active #hud-telemetry,
+body.showcase-active #hud-chat,
+body.showcase-active .popout-bar,
+body.showcase-active .cv-ruler {
+  display: none !important;
+}
+body.showcase-active .grid {
+  grid-template-columns: 1fr !important;
+}
+body.showcase-active .live-subtitle-bar {
+  padding: 14px 20px;
+  bottom: 18px;
+}
+body.showcase-active .sub-row {
+  font-size: 16px;
+}
+
+/* ==========================================================================
+   OFFLINE-PREVIEW-MODUS (Ohne laufendes Backend: schlicht & werbefrei)
+   ========================================================================== */
+.offline-preview-bar {
+  display: none;
+}
+body.web-demo-mode .offline-preview-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(14, 17, 24, 0.72);
+  backdrop-filter: blur(18px);
+  border: var(--glass-border);
+  box-shadow: var(--glass-highlight);
+}
+.op-label {
+  font-family: var(--fm);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--accent-amber);
+}
+.op-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.wh-chip {
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: var(--glass-border);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-platinum);
+  font-size: 11px;
+  font-weight: 600;
+}
+.wh-chip:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(56, 189, 248, 0.14);
+}
+
+/* ==========================================================================
+   LIVE 3-SCREEN VISION DECK + EREIGNIS-TICKER IM HAUPTFENSTER
+   ========================================================================== */
+.live-3screen-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 12px 4px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(9, 12, 18, 0.65);
+}
+.l3s-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.l3s-title {
+  font-family: var(--fm);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  letter-spacing: 0.08em;
+}
+.l3s-meta {
+  font-family: var(--fm);
+  font-size: 9.5px;
+  color: var(--c-text-dim);
+}
+.l3s-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+.l3s-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(14, 17, 24, 0.8);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.l3s-card:hover {
+  border-color: rgba(56, 189, 248, 0.5);
+}
+.l3s-card.scanning {
+  border-color: var(--accent-amber);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
+}
+.l3s-card-top {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 6px;
+  font-family: var(--fm);
+  font-size: 8.5px;
+  color: var(--c-text-body);
+  background: rgba(255, 255, 255, 0.03);
+}
+.l3s-card img {
+  width: 100%;
+  height: 62px;
+  object-fit: cover;
+  background: #040508;
+  display: block;
+}
+.l3s-win {
+  padding: 2px 6px;
+  font-family: var(--fm);
+  font-size: 8.5px;
+  color: var(--c-text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.l3s-ticker {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 8px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--fm);
+  font-size: 10px;
+}
+.l3s-t-tag {
+  color: var(--accent-amber);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.l3s-t-txt {
+  color: var(--text-platinum);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.showcase-active .live-3screen-strip {
+  display: none !important;
+}
+
+/* ==========================================================================
+   UNTEN RECHTS: ALLE 3 MONITORE GLEICHZEITIG + ACTIVE CURSOR INDIKATOR
+   ========================================================================== */
+.cam-3mon-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  padding: 6px;
+  background: #05070b;
+  z-index: 3;
+}
+.cam-3mon-grid.hidden {
+  display: none !important;
+}
+.cam-mon-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  background: #080b12;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.cam-mon-tile.cursor-active {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.42);
+}
+.cam-mon-tile.scanning {
+  border-color: var(--accent-amber);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.45);
+}
+.cam-mon-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 5px;
+  background: rgba(14, 17, 24, 0.9);
+  font-family: var(--fm);
+  font-size: 9px;
+  color: var(--text-platinum);
+  z-index: 2;
+}
+.cam-cursor-pill {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.22);
+  border: 1px solid rgba(56, 189, 248, 0.65);
+  color: #7dd3fc;
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.cam-mon-tile img {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  object-fit: cover;
+  display: block;
+}
+.l3s-card.cursor-active {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+}
+
+/* ==========================================================================
+   VERTIKALES TIKTOK & MOBILE BENTO (<= 960px / 9:16 Hochformat)
+   ========================================================================== */
+@media (max-width: 960px) {
+  html, body {
+    overflow-y: auto !important;
+    height: auto !important;
+  }
+  .hud-outer-frame {
+    position: relative !important;
+    min-height: 100vh;
+  }
+  .topbar {
+    height: auto !important;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 12px !important;
+  }
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+  .col-center {
+    order: -1;
+  }
+  .p-core {
+    min-height: 500px;
+  }
+  body.web-demo-mode .web-hero-strip {
+    grid-template-columns: 1fr;
+  }
+}

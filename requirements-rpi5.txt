@@ -1,0 +1,10 @@
+# Raspberry Pi 5 (ARM64 / aarch64, Debian 12 Bookworm, RP1-Southbridge)
+# Installation automatisch über 1_Pi_Installieren.sh innerhalb von .venv (PEP 668 kompatibel).
+# Verwendet KEIN veraltetes RPi.GPIO, sondern ausschließlich RP1-kompatible Treiber.
+
+gpiod>=2.2.0
+lgpio>=0.2.2.0
+gpiozero>=2.0.1
+pyserial>=3.5
+smbus2>=0.4.3
+spidev>=3.6

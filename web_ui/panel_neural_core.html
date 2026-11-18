@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#050608" />
+  <title>JARVIS // NEURAL 3D CORE WINDOW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/hud-nextgen.css" />
+  <link rel="stylesheet" href="/static/liquid-bento.css" />
+  <link rel="stylesheet" href="/static/tactical-os.css" />
+  <style>
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+    .nc-wrap {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+      padding: 10px 12px;
+      gap: 8px;
+      box-sizing: border-box;
+    }
+    .nc-head { flex: 0 0 auto; z-index: 12; padding: 8px 14px; }
+    .nc-pills { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .nc-btn {
+      cursor: pointer;
+      font-family: var(--fm);
+      font-size: 9.5px;
+      letter-spacing: 0.1em;
+      padding: 4px 9px;
+      border-radius: 3px;
+      border: 1px solid var(--tx-hair-strong);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--tx-platin);
+      text-transform: uppercase;
+    }
+    .nc-btn:hover, .nc-btn.active { border-color: var(--tx-cyan); background: rgba(0, 240, 255, 0.14); }
+    .nc-stage {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      background-image:
+        radial-gradient(ellipse at 50% 48%, rgba(0, 240, 255, 0.11), rgba(5, 6, 8, 0) 64%),
+        linear-gradient(rgba(0, 240, 255, 0.032) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.032) 1px, transparent 1px);
+      background-size: auto, 24px 24px, 24px 24px;
+    }
+    #nc-brain-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 2; }
+    .nc-tel-overlay {
+      position: absolute; top: 14px; left: 14px; z-index: 8; width: 185px;
+      padding: 8px 10px; display: flex; flex-direction: column; gap: 5px;
+      font-family: var(--fm); font-size: 9.5px;
+    }
+    .nc-tel-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .nc-tel-k { color: var(--tx-dim); letter-spacing: 0.12em; }
+    .nc-tel-v { color: var(--tx-platin); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .nc-bar { flex: 1; height: 3px; background: rgba(255, 255, 255, 0.08); border-radius: 2px; overflow: hidden; }
+    .nc-bar i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--tx-cyan), var(--tx-gold)); transition: width 0.2s ease; }
+
+    .nc-state-overlay {
+      position: absolute; top: 14px; right: 14px; z-index: 8;
+      padding: 8px 12px; display: flex; align-items: center; gap: 9px; font-family: var(--fm);
+    }
+    .nc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tx-cyan); box-shadow: 0 0 10px var(--tx-cyan); }
+    .nc-state-overlay.hot .nc-dot { background: var(--tx-gold); box-shadow: 0 0 12px var(--tx-gold); }
+    .nc-state-overlay.scan .nc-dot { background: var(--tx-orange); box-shadow: 0 0 12px var(--tx-orange); }
+    .nc-state-txt b { display: block; font-size: 11px; letter-spacing: 0.14em; color: var(--tx-platin); }
+    .nc-state-txt small { display: block; font-size: 8.5px; letter-spacing: 0.12em; color: var(--tx-dim); }
+    body.nc-clean .nc-head { display: none; }
+    @media (max-width: 680px) {
+      .nc-tel-overlay { width: 146px; top: 10px; left: 10px; }
+      .nc-state-overlay { top: 10px; right: 10px; padding: 6px 9px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="nc-wrap">
+    <header class="tx-panel tx-head nc-head">
+      <div class="tx-title">NEURAL 3D CORE <small>SYNAPSE · CIRCUIT · AUDIO WINDOW</small></div>
+      <div class="nc-pills">
+        <span id="nc-cursor-pill" class="tx-pill">CURSOR: M1</span>
+        <span id="nc-ws-pill" class="tx-pill">WS: VERBINDE…</span>
+        <button id="nc-btn-clean" class="nc-btn" type="button" title="Clean / Recording Modus (F9)">CLEAN (F9)</button>
+        <button id="nc-btn-seq" class="nc-btn" type="button" title="Showcase Sequenz (F10 / F8)">SHOW (F10)</button>
+      </div>
+    </header>
+
+    <main class="tx-panel nc-stage" id="nc-stage">
+      <i class="core-reticle tl" aria-hidden="true"></i>
+      <i class="core-reticle tr" aria-hidden="true"></i>
+      <i class="core-reticle bl" aria-hidden="true"></i>
+      <i class="core-reticle br" aria-hidden="true"></i>
+
+      <canvas id="nc-brain-canvas"></canvas>
+
+      <aside class="hud-glass nc-tel-overlay" aria-label="Minimal-Telemetrie">
+        <div class="nc-tel-row"><span class="nc-tel-k">CPU</span><span class="nc-bar"><i id="nc-cpu-bar"></i></span><b id="nc-cpu-v" class="nc-tel-v">0%</b></div>
+        <div class="nc-tel-row"><span class="nc-tel-k">RAM</span><span class="nc-bar"><i id="nc-ram-bar"></i></span><b id="nc-ram-v" class="nc-tel-v">0%</b></div>
+        <div class="nc-tel-row"><span class="nc-tel-k">TEMP</span><b id="nc-temp-v" class="nc-tel-v">--</b></div>
+        <div class="nc-tel-row"><span class="nc-tel-k">AUDIO</span><b id="nc-aud-v" class="nc-tel-v">0%</b></div>
+        <div class="nc-tel-row"><span class="nc-tel-k">FPS</span><b id="nc-fps-v" class="nc-tel-v">60</b></div>
+      </aside>
+
+      <div id="nc-state-box" class="hud-glass nc-state-overlay">
+        <i class="nc-dot"></i>
+        <div class="nc-state-txt">
+          <b id="nc-state-title">STANDBY</b>
+          <small id="nc-state-sub">NEURAL 3D CORE</small>
+        </div>
+      </div>
+
+      <div id="live-subtitle-bar" class="live-subtitle-bar">
+        <div class="sub-row"><span class="sub-tag user">USER</span><span id="nc-sub-user" class="sub-txt">Bereit für Sprachbefehl („Jarvis …“)</span></div>
+        <div class="sub-row"><span class="sub-tag action">ACTION</span><span id="nc-sub-action" class="sub-txt">NEURAL CORE · STANDBY</span></div>
+        <div id="nc-cmd-steps" class="cmd-steps">
+          <span class="cmd-step voice">NEURAL WINDOW // SYNC</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/beta_guard_ui.js"></script>
+  <script src="/static/three.min.js"></script>
+  <script src="/static/neural_brain.js"></script>
+  <script>
+    (function () {
+      try {
+        if (/arm|aarch64/i.test(navigator.platform || "") || /aarch64|armv/i.test(navigator.userAgent || "")) {
+          document.body.classList.add("perf-lite");
+        }
+      } catch (_e) {}
+
+      const canvas = document.getElementById("nc-brain-canvas");
+      const stage = document.getElementById("nc-stage");
+      const stateBox = document.getElementById("nc-state-box");
+      const stateTitle = document.getElementById("nc-state-title");
+      const stateSub = document.getElementById("nc-state-sub");
+      const subUser = document.getElementById("nc-sub-user");
+      const subAction = document.getElementById("nc-sub-action");
+      const cmdSteps = document.getElementById("nc-cmd-steps");
+      const wsPill = document.getElementById("nc-ws-pill");
+      const cursorPill = document.getElementById("nc-cursor-pill");
+
+      const brain = typeof window.JarvisNeuralBrain === "function" && canvas
+        ? new window.JarvisNeuralBrain(canvas)
+        : null;
+      if (brain && brain.supported) {
+        window.__jarvisBrain3D = brain;
+        window.addEventListener("resize", () => brain.resize());
+        if (stage) {
+          stage.addEventListener("mousemove", (ev) => {
+            const r = stage.getBoundingClientRect();
+            if (r.width > 0 && r.height > 0) {
+              brain.setPointer(((ev.clientX - r.left) / r.width) * 2 - 1, ((ev.clientY - r.top) / r.height) * 2 - 1);
+            }
+          });
+          stage.addEventListener("mouseleave", () => brain.setPointer(0, 0));
+        }
+      }
+
+      let audioLvl = 0;
+      let vadOn = false;
+      let speakOn = false;
+      let lastSig = "";
+
+      function pushStep(cat, txt) {
+        if (!cmdSteps || !txt) return;
+        const clean = String(txt).trim().slice(0, 46);
+        const sig = `${cat}:${clean}`;
+        if (sig === lastSig) return;
+        lastSig = sig;
+        const el = document.createElement("span");
+        el.className = `cmd-step ${cat || "voice"}`;
+        el.textContent = clean.toUpperCase();
+        cmdSteps.appendChild(el);
+        while (cmdSteps.children.length > 4) cmdSteps.removeChild(cmdSteps.firstChild);
+      }
+
+      function applyBrain(pkt) {
+        if (!pkt) return;
+        const st = String(pkt.state || "idle").toLowerCase();
+        if (brain) brain.setActivity(pkt);
+        if (st === "screen_scan" && brain && typeof brain.setScanTargets === "function") {
+          const mon = Number(pkt.active_monitor || 2);
+          const xMap = { 1: -0.78, 2: 0.0, 3: 0.78 };
+          if (pkt.active_monitor === "all") {
+            brain.setScanTargets([{ x: -0.78, y: 0.72 }, { x: 0.0, y: 0.78 }, { x: 0.78, y: 0.72 }]);
+          } else {
+            brain.setScanTargets([{ x: xMap[mon] ?? 0.72, y: 0.72 }]);
+          }
+        } else if (brain && typeof brain.setScanTargets === "function") {
+          brain.setScanTargets([]);
+        }
+
+        if (stateTitle) stateTitle.textContent = st.toUpperCase();
+        if (stateSub) stateSub.textContent = String(pkt.detail || "NEURAL 3D CORE").toUpperCase();
+        if (stateBox) {
+          stateBox.classList.toggle("hot", st === "n8n" || st === "thinking");
+          stateBox.classList.toggle("scan", st === "screen_scan" || st === "error");
+        }
+        if (pkt.detail) {
+          if (subAction) subAction.textContent = `${st.toUpperCase()} · ${pkt.detail}`;
+          const stepCat = st === "n8n" ? "n8n" : st === "screen_scan" ? "vision" : st === "thinking" ? "tool" : "voice";
+          pushStep(stepCat, pkt.detail);
+        }
+      }
+
+      function applyTel(t) {
+        if (!t) return;
+        const cpu = Math.round(Number(t.cpu_pct || 0));
+        const ram = Math.round(Number(t.ram_pct || 0));
+        document.getElementById("nc-cpu-v").textContent = `${cpu}%`;
+        document.getElementById("nc-cpu-bar").style.width = `${Math.min(100, cpu)}%`;
+        document.getElementById("nc-ram-v").textContent = `${ram}%`;
+        document.getElementById("nc-ram-bar").style.width = `${Math.min(100, ram)}%`;
+        document.getElementById("nc-temp-v").textContent = t.temp_c != null ? `${Math.round(Number(t.temp_c))}°C` : "--";
+        if (t.mouse && cursorPill) {
+          cursorPill.textContent = `CURSOR: M${t.mouse.monitor || 1} (${t.mouse.x}, ${t.mouse.y})`;
+        }
+      }
+
+      function handleMsg(msg) {
+        if (!msg) return;
+        if ((msg.expired === true || msg.type === "beta_guard" || msg.beta_guard) && typeof window.__applyBetaGuardState === "function") {
+          if (window.__applyBetaGuardState(msg)) return;
+        }
+        if (!msg.type) return;
+        if (msg.type === "snapshot" && msg.data) {
+          if (msg.data.beta_guard && typeof window.__applyBetaGuardState === "function") window.__applyBetaGuardState(msg.data.beta_guard);
+          applyTel(msg.data.telemetry);
+          applyBrain(msg.data.brain_activity);
+          if (msg.data.user_text && subUser) subUser.textContent = msg.data.user_text;
+          if (msg.data.jarvis_text && subAction) subAction.textContent = msg.data.jarvis_text;
+        } else if (msg.type === "telemetry") {
+          applyTel(msg.data);
+        } else if (msg.type === "audio") {
+          audioLvl = Number(msg.level || 0);
+          vadOn = Boolean(msg.vad_active);
+          speakOn = Boolean(msg.speaking_active);
+          document.getElementById("nc-aud-v").textContent = `${Math.round(audioLvl * 100)}%`;
+          if (vadOn && !speakOn) {
+            applyBrain({ state: "listening", intensity: 0.78, detail: "STIMME ERKANNT (CYAN)" });
+          } else if (speakOn) {
+            applyBrain({ state: "speaking", intensity: 0.85, detail: "ANTWORT STREAM" });
+          }
+        } else if (msg.type === "brain_activity") {
+          applyBrain(msg);
+        } else if (msg.type === "stt" && subUser) {
+          subUser.textContent = msg.raw || msg.text || "";
+        } else if (msg.type === "jarvis" && subAction) {
+          subAction.textContent = msg.text || "";
+        } else if (msg.type === "n8n_status" && msg.n8n) {
+          if (msg.n8n.last_event) pushStep("n8n", msg.n8n.last_event);
+        } else if (msg.type === "neural_thought") {
+          pushStep(msg.category || "thought", msg.summary || "");
+        } else if (msg.type === "telemetry_event" && msg.event) {
+          pushStep(msg.event.category || "voice", msg.event.summary || "");
+        } else if (msg.type === "subtitle" && msg.txt) {
+          if (msg.role === "user" && subUser) subUser.textContent = msg.txt;
+          if (msg.role !== "user" && subAction) subAction.textContent = msg.txt;
+        }
+      }
+
+      const bc = "BroadcastChannel" in window ? new BroadcastChannel("jarvis_hud_sync_v1") : null;
+      if (bc) bc.onmessage = (ev) => handleMsg(ev.data);
+
+      function connectWs() {
+        const proto = location.protocol === "https:" ? "wss:" : "ws:";
+        const ws = new WebSocket(`${proto}//${location.host}/ws`);
+        ws.onopen = () => { if (wsPill) wsPill.textContent = "WS: SYNCHRON"; };
+        ws.onmessage = (ev) => { try { handleMsg(JSON.parse(ev.data)); } catch (_e) {} };
+        ws.onclose = () => { if (wsPill) wsPill.textContent = "WS: OFFLINE"; setTimeout(connectWs, 1800); };
+      }
+      connectWs();
+
+      function toggleClean() {
+        const next = !document.body.classList.contains("nc-clean");
+        document.body.classList.toggle("nc-clean", next);
+        setTimeout(() => { if (brain) brain.resize(); }, 60);
+      }
+      document.getElementById("nc-btn-clean").addEventListener("click", toggleClean);
+
+      let seqTimers = [];
+      function runShowSeq() {
+        seqTimers.forEach(clearTimeout);
+        seqTimers = [];
+        const steps = [
+          [0, () => { audioLvl = 0.72; vadOn = true; speakOn = false; if (subUser) subUser.textContent = "„Jarvis, zeige alle Leiterbahn-Impulse!“"; applyBrain({ state: "listening", intensity: 0.85, detail: "VOICE CYAN SURGE" }); }],
+          [1800, () => { audioLvl = 0.15; vadOn = false; applyBrain({ state: "screen_scan", active_monitor: "all", intensity: 0.96, detail: "3-MONITOR SCAN BEAM" }); }],
+          [3800, () => { if (brain) brain.triggerShock(); applyBrain({ state: "n8n", intensity: 1.0, detail: "N8N GOLD SHOCKWAVE" }); }],
+          [5800, () => { audioLvl = 0.84; speakOn = true; if (subAction) subAction.textContent = "„Neural 3D Core synchronisiert.“"; applyBrain({ state: "speaking", intensity: 0.88, detail: "TTS RADIAL WELLE" }); }],
+          [8200, () => { audioLvl = 0.04; vadOn = false; speakOn = false; applyBrain({ state: "idle", intensity: 0.28, detail: "STANDBY" }); }],
+        ];
+        steps.forEach(([ms, fn]) => seqTimers.push(setTimeout(fn, ms)));
+      }
+      document.getElementById("nc-btn-seq").addEventListener("click", runShowSeq);
+      window.addEventListener("keydown", (ev) => {
+        if (typeof window.__isBetaExpired === "function" && window.__isBetaExpired()) return;
+        if (ev.key === "F9") { ev.preventDefault(); toggleClean(); }
+        else if (ev.key === "F10" || ev.key === "F8") { ev.preventDefault(); runShowSeq(); }
+      });
+
+      let lastT = performance.now();
+      let fpsFrames = 0;
+      let fpsStamp = lastT;
+      function loop(now) {
+        requestAnimationFrame(loop);
+        if (document.hidden || (typeof window.__isBetaExpired === "function" && window.__isBetaExpired())) { lastT = now; return; }
+        const dt = Math.min(0.05, Math.max(0.004, (now - lastT) / 1000));
+        lastT = now;
+        if (brain) {
+          brain.setAudio(audioLvl, vadOn, speakOn);
+          brain.render(dt);
+        }
+        fpsFrames++;
+        if (now - fpsStamp >= 1000) {
+          document.getElementById("nc-fps-v").textContent = String(Math.round((fpsFrames * 1000) / (now - fpsStamp)));
+          fpsFrames = 0;
+          fpsStamp = now;
+        }
+      }
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#050608" />
+  <title>JARVIS // FENSTER 3: SYSTEM-TELEMETRY &amp; LIVE-LOGS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/hud-nextgen.css" />
+  <link rel="stylesheet" href="/static/liquid-bento.css" />
+  <link rel="stylesheet" href="/static/tactical-os.css" />
+  <style>
+    body { margin: 0; overflow: hidden; }
+    .sub-wrap { display: flex; flex-direction: column; height: 100vh; padding: 10px 12px; gap: 9px; box-sizing: border-box; }
+    .sub-badges { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+
+    /* Real-Time CPU / GPU / RAM Sparkline Strip */
+    .metrics-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; flex: 0 0 auto; }
+    .m-card { padding: 9px 12px 8px 12px; display: flex; flex-direction: column; gap: 4px; }
+    .m-lbl {
+      font-family: var(--fm); font-size: 9px; letter-spacing: 0.16em; color: var(--tx-dim);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .m-top-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .m-val { font-family: var(--fd); font-size: 21px; font-weight: 700; color: var(--tx-platin); line-height: 1.05; }
+    .m-peak { font-family: var(--fm); font-size: 8.5px; color: var(--tx-dim); }
+    .spark-wrap {
+      width: 100%; height: 34px; position: relative;
+      border-radius: 2px; border: 1px solid rgba(255, 255, 255, 0.06);
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px) 0 0 / 100% 11px,
+        rgba(3, 4, 7, 0.72);
+      overflow: hidden;
+    }
+    .spark-cv { width: 100%; height: 100%; display: block; }
+    .m-bar { height: 3px; background: rgba(255, 255, 255, 0.07); border-radius: 2px; overflow: hidden; }
+    .m-bar i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--tx-cyan), var(--tx-gold)); transition: width 0.22s ease; }
+
+    /* Split Workspace */
+    .tel-split { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.45fr 1fr; gap: 10px; }
+    .stream-panel { display: flex; flex-direction: column; min-height: 0; padding: 9px 11px; gap: 8px; }
+    .filter-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--tx-hair); padding-bottom: 7px; }
+    .filter-btns { display: flex; gap: 5px; flex-wrap: wrap; }
+    .f-btn {
+      cursor: pointer; padding: 3px 9px; border-radius: 2px;
+      border: 1px solid var(--tx-hair); background: rgba(255, 255, 255, 0.03);
+      color: var(--tx-dim); font-family: var(--fm); font-size: 9px; letter-spacing: 0.12em; font-weight: 600;
+    }
+    .f-btn:hover { border-color: var(--tx-hair-strong); color: var(--tx-platin); }
+    .f-btn.active { border-color: var(--tx-cyan); background: rgba(0, 240, 255, 0.12); color: var(--tx-platin); box-shadow: 0 0 12px rgba(0, 240, 255, 0.22); }
+    .stream-box {
+      flex: 1; min-height: 0; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 6px; padding-right: 3px;
+    }
+    .t-item {
+      border-left: 2px solid var(--tx-cyan);
+      background: rgba(12, 16, 24, 0.72);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 7px 10px; border-radius: 0 3px 3px 0;
+    }
+    .t-item.cat-tool { border-left-color: var(--tx-gold); }
+    .t-item.cat-n8n { border-left-color: var(--tx-gold); background: rgba(34, 24, 6, 0.56); }
+    .t-item.cat-vision { border-left-color: var(--tx-orange); background: rgba(36, 14, 6, 0.5); }
+    .t-item.cat-ticker { border-left-color: var(--tx-platin); }
+    .t-top { display: flex; justify-content: space-between; font-family: var(--fm); font-size: 9px; letter-spacing: 0.08em; color: var(--tx-dim); margin-bottom: 3px; }
+    .t-tool { color: var(--tx-gold); font-weight: 700; }
+    .t-sum { font-family: var(--fd); font-size: 12px; line-height: 1.38; color: var(--tx-platin); }
+    .t-code {
+      margin-top: 5px; padding: 6px 8px; border-radius: 2px;
+      background: rgba(4, 5, 8, 0.94); border: 1px solid var(--tx-hair);
+      font-family: var(--fm); font-size: 10px; color: #8af7ff; white-space: pre-wrap; overflow-x: auto;
+    }
+
+    /* Right Column: Visual n8n Pipeline Cards + Live psutil Processes */
+    .right-stack { display: flex; flex-direction: column; min-height: 0; gap: 9px; }
+    .n8n-pipe-panel { padding: 9px 11px; display: flex; flex-direction: column; gap: 7px; flex: 0 0 auto; max-height: 45%; overflow: hidden; }
+    .sec-head {
+      font-family: var(--fm); font-size: 9.5px; letter-spacing: 0.16em; color: var(--tx-cyan);
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--tx-hair); padding-bottom: 5px;
+    }
+    .sec-head.gold { color: var(--tx-gold); }
+    .n8n-cards { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 2px; }
+    .wf-card {
+      padding: 7px 9px; border-radius: 3px;
+      border: 1px solid rgba(255, 176, 32, 0.22);
+      background: rgba(255, 176, 32, 0.035);
+      display: flex; flex-direction: column; gap: 5px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .wf-card.surge {
+      border-color: var(--tx-gold);
+      box-shadow: 0 0 18px rgba(255, 176, 32, 0.34), inset 0 0 12px rgba(255, 176, 32, 0.1);
+    }
+    .wf-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-family: var(--fm); font-size: 10px; }
+    .wf-name { color: var(--tx-platin); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .wf-run-btn {
+      cursor: pointer; padding: 2px 7px; border-radius: 2px;
+      border: 1px solid rgba(255, 176, 32, 0.5); background: rgba(255, 176, 32, 0.14);
+      color: #ffe2a8; font-family: var(--fm); font-size: 8.5px; font-weight: 700; letter-spacing: 0.1em;
+    }
+    .wf-run-btn:hover { background: rgba(255, 176, 32, 0.28); }
+    .wf-chain { display: flex; align-items: center; gap: 4px; font-family: var(--fm); font-size: 8.5px; letter-spacing: 0.08em; }
+    .wf-node {
+      padding: 2px 6px; border-radius: 2px;
+      border: 1px solid var(--tx-hair-strong); background: rgba(5, 6, 8, 0.85); color: var(--tx-dim);
+      white-space: nowrap;
+    }
+    .wf-node.trig { border-color: rgba(0, 240, 255, 0.45); color: var(--tx-cyan); }
+    .wf-node.proc { border-color: rgba(255, 176, 32, 0.45); color: #ffd890; }
+    .wf-node.resp { border-color: rgba(248, 250, 252, 0.3); color: var(--tx-platin); }
+    .wf-arrow { color: var(--tx-gold); opacity: 0.75; }
+
+    .proc-panel { flex: 1; min-height: 0; padding: 9px 11px; display: flex; flex-direction: column; gap: 7px; overflow: hidden; }
+    .proc-list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; font-family: var(--fm); font-size: 10px; }
+    .proc-row {
+      position: relative; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      padding: 4px 8px; border-radius: 2px; overflow: hidden;
+      background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .proc-row.cursor-mon { border-color: rgba(0, 240, 255, 0.5); background: rgba(0, 240, 255, 0.08); }
+    .proc-bar-bg {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      background: rgba(0, 240, 255, 0.08); pointer-events: none; z-index: 0;
+    }
+    .proc-row > span, .proc-row > b { position: relative; z-index: 1; }
+  </style>
+</head>
+<body>
+  <div class="sub-wrap">
+    <header class="tx-panel tx-head">
+      <div class="tx-title">SYSTEM-TELEMETRY <small>WINDOW 03 · SPARKLINES · N8N PIPELINES · LIVE LOGS</small></div>
+      <div class="sub-badges">
+        <span id="nl-mouse" class="tx-pill">CURSOR: 0, 0 · M1</span>
+        <span id="nl-brain-state" class="tx-pill">BRAIN: IDLE</span>
+        <span id="nl-ws-state" class="tx-pill">WS: VERBINDE…</span>
+      </div>
+    </header>
+
+    <section class="metrics-strip">
+      <div class="tx-panel m-card">
+        <div class="m-lbl"><span>CPU TELEMETRY</span><span id="nl-temp">--°C</span></div>
+        <div class="m-top-row"><div id="nl-cpu-val" class="m-val">0%</div><span id="nl-cpu-peak" class="m-peak">PEAK 0%</span></div>
+        <div class="spark-wrap"><canvas id="cv-spark-cpu" class="spark-cv"></canvas></div>
+        <div class="m-bar"><i id="nl-cpu-bar"></i></div>
+      </div>
+      <div class="tx-panel m-card">
+        <div class="m-lbl"><span>GPU TELEMETRY</span><span id="nl-gpu-name">AUTO</span></div>
+        <div class="m-top-row"><div id="nl-gpu-val" class="m-val">--</div><span id="nl-gpu-peak" class="m-peak">PEAK 0%</span></div>
+        <div class="spark-wrap"><canvas id="cv-spark-gpu" class="spark-cv"></canvas></div>
+        <div class="m-bar"><i id="nl-gpu-bar"></i></div>
+      </div>
+      <div class="tx-panel m-card">
+        <div class="m-lbl"><span>RAM MEMORY</span><span id="nl-ram-gb">0 / 0 GB</span></div>
+        <div class="m-top-row"><div id="nl-ram-val" class="m-val">0%</div><span id="nl-ram-peak" class="m-peak">PEAK 0%</span></div>
+        <div class="spark-wrap"><canvas id="cv-spark-ram" class="spark-cv"></canvas></div>
+        <div class="m-bar"><i id="nl-ram-bar"></i></div>
+      </div>
+      <div class="tx-panel m-card">
+        <div class="m-lbl"><span>NEURAL ENGINE &amp; N8N</span><span id="nl-n8n-mode">LOKAL</span></div>
+        <div id="nl-model" class="m-val" style="font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px;">INITIALISIERE</div>
+        <div id="nl-n8n-last" style="font-family:var(--fm);font-size:9px;color:var(--tx-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:4px 0;">Bereit (0 EUR Community-Edition)</div>
+        <div class="m-bar" style="margin-top:auto;"><i id="nl-act-bar" style="width:30%;"></i></div>
+      </div>
+    </section>
+
+    <div class="tel-split">
+      <section class="tx-panel stream-panel">
+        <div class="filter-row">
+          <div class="filter-btns">
+            <button class="f-btn active" data-cat="all" type="button">ALLE</button>
+            <button class="f-btn" data-cat="ticker" type="button">TICKER</button>
+            <button class="f-btn" data-cat="thought" type="button">GEDANKEN</button>
+            <button class="f-btn" data-cat="tool" type="button">TOOLS</button>
+            <button class="f-btn" data-cat="n8n" type="button">N8N</button>
+            <button class="f-btn" data-cat="vision" type="button">VISION</button>
+          </div>
+          <button id="nl-clear" class="f-btn" type="button">LEEREN</button>
+        </div>
+        <main id="nl-stream" class="stream-box"></main>
+      </section>
+
+      <aside class="right-stack">
+        <section class="tx-panel n8n-pipe-panel">
+          <div class="sec-head gold">
+            <span>N8N WORKFLOW PIPELINES</span>
+            <span id="nl-n8n-count" class="tx-pill hot">0 FLOWS</span>
+          </div>
+          <div id="nl-n8n-cards" class="n8n-cards"></div>
+        </section>
+
+        <section class="tx-panel proc-panel">
+          <div class="sec-head"><span>LIVE PROZESSE (PSUTIL)</span><span id="nl-proc-count">0</span></div>
+          <div id="nl-proc-list" class="proc-list"></div>
+          <div class="sec-head" style="margin-top:2px;"><span>AKTIVE FENSTER JE MONITOR</span><span id="nl-cur-mon-tag">M1</span></div>
+          <div id="nl-mon-wins" class="proc-list" style="flex:0 0 auto;max-height:92px;"></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script src="/static/beta_guard_ui.js"></script>
+  <script>
+    (function () {
+      try {
+        if (/arm|aarch64/i.test(navigator.platform || "") || /aarch64|armv/i.test(navigator.userAgent || "")) {
+          document.body.classList.add("perf-lite");
+        }
+      } catch (_e) {}
+
+      const stream = document.getElementById("nl-stream");
+      const brainEl = document.getElementById("nl-brain-state");
+      const wsEl = document.getElementById("nl-ws-state");
+      const procList = document.getElementById("nl-proc-list");
+      const monWins = document.getElementById("nl-mon-wins");
+      const n8nCardsEl = document.getElementById("nl-n8n-cards");
+      let activeCat = "all";
+      let currentCursorMon = 1;
+      let isN8nSurge = false;
+      let lastN8nData = null;
+      const items = [];
+      const bc = "BroadcastChannel" in window ? new BroadcastChannel("jarvis_hud_sync_v1") : null;
+
+      /* Echtzeit-Sparklines (CPU / GPU / RAM) mit 60 Samples */
+      const SPARK_LEN = 60;
+      const hist = {
+        cpu: new Array(SPARK_LEN).fill(0),
+        gpu: new Array(SPARK_LEN).fill(0),
+        ram: new Array(SPARK_LEN).fill(0),
+      };
+      const peaks = { cpu: 0, gpu: 0, ram: 0 };
+
+      function drawSpark(canvasId, series, strokeColor, fillTop) {
+        const cv = document.getElementById(canvasId);
+        if (!cv) return;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const w = Math.max(100, cv.clientWidth || 160);
+        const h = Math.max(24, cv.clientHeight || 34);
+        if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) {
+          cv.width = Math.round(w * dpr);
+          cv.height = Math.round(h * dpr);
+        }
+        const ctx = cv.getContext("2d");
+        if (!ctx) return;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+
+        const padY = 3;
+        const usableH = h - padY * 2;
+        const stepX = w / (series.length - 1);
+
+        ctx.beginPath();
+        for (let i = 0; i < series.length; i++) {
+          const x = i * stepX;
+          const v = Math.max(0, Math.min(100, Number(series[i]) || 0));
+          const y = h - padY - (v / 100) * usableH;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, fillTop);
+        grad.addColorStop(1, "rgba(5, 6, 8, 0)");
+
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        const lastV = Math.max(0, Math.min(100, Number(series[series.length - 1]) || 0));
+        const lastY = h - padY - (lastV / 100) * usableH;
+        ctx.beginPath();
+        ctx.arc(w - 2, lastY, 2.4, 0, Math.PI * 2);
+        ctx.fillStyle = strokeColor;
+        ctx.fill();
+      }
+
+      function pushSpark(key, val) {
+        const v = Math.max(0, Math.min(100, Number(val) || 0));
+        hist[key].push(v);
+        if (hist[key].length > SPARK_LEN) hist[key].shift();
+        if (v > peaks[key]) peaks[key] = v;
+      }
+
+      function redrawAllSparks() {
+        drawSpark("cv-spark-cpu", hist.cpu, "#00F0FF", "rgba(0, 240, 255, 0.28)");
+        drawSpark("cv-spark-gpu", hist.gpu, "#FFB020", "rgba(255, 176, 32, 0.28)");
+        drawSpark("cv-spark-ram", hist.ram, "#F8FAFC", "rgba(248, 250, 252, 0.20)");
+      }
+      window.addEventListener("resize", redrawAllSparks);
+
+      function esc(s) {
+        return String(s || "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+      }
+
+      function renderN8nPipelines(n8n) {
+        if (n8n) lastN8nData = n8n;
+        const d = lastN8nData || { mode: "LOCAL", online: false, workflow_count: 0, workflows: [], last_event: "Bereit" };
+        document.getElementById("nl-n8n-mode").textContent = `${d.mode || "LOCAL"}`;
+        document.getElementById("nl-n8n-count").textContent = `${Number(d.workflow_count || (d.workflows || []).length)} FLOWS`;
+        if (d.last_event) document.getElementById("nl-n8n-last").textContent = d.last_event;
+
+        const wfs = Array.isArray(d.workflows) && d.workflows.length ? d.workflows : [
+          { id: "default", name: "Jarvis Core Webhook Pipeline", active: Boolean(d.online), node_count: 3, webhook_slug: "jarvis-hook" },
+        ];
+        n8nCardsEl.innerHTML = wfs.slice(0, 6).map((wf) => `
+          <div class="wf-card ${isN8nSurge ? "surge" : ""}">
+            <div class="wf-top">
+              <span class="wf-name" title="${esc(wf.name)}">${esc(wf.name)}</span>
+              <button class="wf-run-btn" data-wf-run="${esc(wf.webhook_slug || wf.name)}" type="button">▶ RUN</button>
+            </div>
+            <div class="wf-chain">
+              <span class="wf-node trig">⚡ /${esc((wf.webhook_slug || "hook").slice(0, 14))}</span>
+              <span class="wf-arrow">→</span>
+              <span class="wf-node proc">⚙ ${Number(wf.node_count || 3)} NODES</span>
+              <span class="wf-arrow">→</span>
+              <span class="wf-node resp">${wf.active ? "● ACTIVE" : "◈ READY"}</span>
+            </div>
+          </div>
+        `).join("");
+
+        n8nCardsEl.querySelectorAll("[data-wf-run]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const target = btn.dataset.wfRun || "";
+            btn.textContent = "…";
+            await fetch("/api/n8n/run", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ target }),
+            }).catch(() => {});
+            btn.textContent = "▶ RUN";
+            fetch("/api/n8n/status").then((r) => r.json()).then(renderN8nPipelines).catch(() => {});
+          });
+        });
+      }
+
+      function renderStream() {
+        const list = items.filter((it) => activeCat === "all" || it.category === activeCat).slice(-90);
+        stream.innerHTML = list.map((it) => {
+          const mon = it.monitor ? ` · [M${String(it.monitor).toUpperCase()}]` : "";
+          const codeHtml = it.code ? `<pre class="t-code">${esc(it.code)}</pre>` : "";
+          return `<div class="t-item cat-${esc(it.category)}">
+            <div class="t-top"><span>[${esc(it.ts)}] · <span class="t-tool">${esc((it.tool || it.category).toUpperCase())}${esc(mon)}</span></span><span>${esc(it.category).toUpperCase()}</span></div>
+            <div class="t-sum">${esc(it.summary)}</div>
+            ${codeHtml}
+          </div>`;
+        }).join("");
+        stream.scrollTop = stream.scrollHeight;
+      }
+
+      function pushItem(entry) {
+        if (!entry || !entry.summary) return;
+        items.push({
+          category: entry.category || "thought",
+          tool: entry.tool || "",
+          summary: entry.summary || "",
+          code: entry.code || "",
+          monitor: entry.monitor || null,
+          ts: entry.ts || new Date().toLocaleTimeString("de-DE", { hour12: false }),
+        });
+        if (items.length > 180) items.shift();
+        renderStream();
+      }
+
+      function applyTelemetry(t) {
+        if (!t) return;
+        const cpu = Number(t.cpu_pct || 0);
+        const ram = Number(t.ram_pct || 0);
+        pushSpark("cpu", cpu);
+        pushSpark("ram", ram);
+
+        document.getElementById("nl-cpu-val").textContent = `${cpu.toFixed(0)}%`;
+        document.getElementById("nl-cpu-peak").textContent = `PEAK ${peaks.cpu.toFixed(0)}%`;
+        document.getElementById("nl-cpu-bar").style.width = `${Math.min(100, cpu)}%`;
+        document.getElementById("nl-temp").textContent = t.temp_c != null ? `${Number(t.temp_c).toFixed(0)}°C` : "--°C";
+
+        document.getElementById("nl-ram-val").textContent = `${ram.toFixed(0)}%`;
+        document.getElementById("nl-ram-peak").textContent = `PEAK ${peaks.ram.toFixed(0)}%`;
+        document.getElementById("nl-ram-bar").style.width = `${Math.min(100, ram)}%`;
+        document.getElementById("nl-ram-gb").textContent = `${t.ram_used_gb || 0} / ${t.ram_total_gb || 0} GB`;
+
+        const gpuEl = document.getElementById("nl-gpu-val");
+        const gpuBar = document.getElementById("nl-gpu-bar");
+        if (t.gpu_pct !== null && t.gpu_pct !== undefined) {
+          const g = Number(t.gpu_pct);
+          pushSpark("gpu", g);
+          gpuEl.textContent = `${g.toFixed(0)}%`;
+          document.getElementById("nl-gpu-peak").textContent = `PEAK ${peaks.gpu.toFixed(0)}%`;
+          gpuBar.style.width = `${Math.min(100, g)}%`;
+          document.getElementById("nl-gpu-name").textContent = t.gpu_name || "GPU";
+        } else {
+          const est = Math.min(100, cpu * 0.55);
+          pushSpark("gpu", est);
+          gpuEl.textContent = `${est.toFixed(0)}%`;
+          document.getElementById("nl-gpu-peak").textContent = "IGPU EST";
+          gpuBar.style.width = `${est}%`;
+        }
+        redrawAllSparks();
+
+        if (t.mouse) {
+          currentCursorMon = Number(t.mouse.monitor || 1);
+          document.getElementById("nl-mouse").textContent = `CURSOR: ${t.mouse.x}, ${t.mouse.y} · M${currentCursorMon}`;
+          document.getElementById("nl-cur-mon-tag").textContent = `ACTIVE M${currentCursorMon}`;
+        }
+        if (Array.isArray(t.processes)) {
+          document.getElementById("nl-proc-count").textContent = String(t.processes.length);
+          procList.innerHTML = t.processes.map((p) => {
+            const pct = Math.max(0, Math.min(100, Number(p.cpu_pct) || 0));
+            return `<div class="proc-row">
+              <i class="proc-bar-bg" style="width:${pct.toFixed(1)}%;"></i>
+              <span style="color:var(--tx-platin);">${esc(p.name)}</span>
+              <span style="color:var(--tx-cyan);">${pct.toFixed(1)}% · ${p.ram_mb} MB</span>
+            </div>`;
+          }).join("");
+        }
+        if (t.active_by_monitor) {
+          monWins.innerHTML = Object.entries(t.active_by_monitor).map(([m, w]) =>
+            `<div class="proc-row ${Number(m) === currentCursorMon ? "cursor-mon" : ""}">
+              <b style="color:var(--tx-cyan);">M${esc(m)}</b>
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:78%;color:var(--tx-platin);">${esc(w)}</span>
+            </div>`
+          ).join("");
+        }
+      }
+
+      function applyBrain(b) {
+        if (!b) return;
+        const st = String(b.state || "idle").toUpperCase();
+        const mon = b.active_monitor ? ` · M${String(b.active_monitor).toUpperCase()}` : "";
+        brainEl.textContent = `BRAIN: ${st}${mon}`;
+        brainEl.classList.toggle("hot", st === "THINKING" || st === "N8N");
+        brainEl.classList.toggle("alert", st === "SCREEN_SCAN" || st === "ERROR");
+        document.getElementById("nl-act-bar").style.width = `${Math.round((Number(b.intensity) || 0.3) * 100)}%`;
+        const nextSurge = st === "N8N";
+        if (nextSurge !== isN8nSurge) {
+          isN8nSurge = nextSurge;
+          renderN8nPipelines();
+        }
+      }
+
+      function handleMsg(msg) {
+        if (!msg) return;
+        if ((msg.expired === true || msg.type === "beta_guard" || msg.beta_guard) && typeof window.__applyBetaGuardState === "function") {
+          if (window.__applyBetaGuardState(msg)) return;
+        }
+        if (!msg.type) return;
+        if (msg.type === "snapshot" && msg.data) {
+          if (msg.data.beta_guard && typeof window.__applyBetaGuardState === "function") window.__applyBetaGuardState(msg.data.beta_guard);
+          applyTelemetry(msg.data.telemetry);
+          applyBrain(msg.data.brain_activity);
+          if (msg.data.model_label) document.getElementById("nl-model").textContent = msg.data.model_label;
+          if (msg.data.n8n) renderN8nPipelines(msg.data.n8n);
+          (msg.data.neural_thoughts || []).forEach(pushItem);
+          (msg.data.telemetry_events || []).forEach((ev) => pushItem({
+            category: ev.category === "vision" ? "vision" : "ticker",
+            tool: `${ev.category}/${ev.source}`,
+            summary: ev.summary,
+            monitor: ev.monitor,
+            ts: ev.ts,
+          }));
+        } else if (msg.type === "telemetry") {
+          applyTelemetry(msg.data);
+        } else if (msg.type === "brain_activity") {
+          applyBrain(msg);
+        } else if (msg.type === "neural_thought") {
+          pushItem(msg);
+        } else if (msg.type === "telemetry_event" && msg.event) {
+          const ev = msg.event;
+          pushItem({
+            category: ev.category === "vision" ? "vision" : "ticker",
+            tool: `${ev.category}/${ev.source}`,
+            summary: ev.summary,
+            monitor: ev.monitor,
+            ts: ev.ts,
+          });
+        } else if (msg.type === "n8n_status" && msg.n8n) {
+          renderN8nPipelines(msg.n8n);
+        } else if (msg.type === "log" && msg.line) {
+          pushItem({ category: "system", tool: "HUD-LOG", summary: msg.line });
+        } else if (msg.type === "model") {
+          document.getElementById("nl-model").textContent = msg.model_label || "";
+        }
+      }
+
+      document.querySelectorAll(".f-btn[data-cat]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeCat = btn.dataset.cat || "all";
+          document.querySelectorAll(".f-btn[data-cat]").forEach((b) => b.classList.toggle("active", b === btn));
+          renderStream();
+        });
+      });
+      document.getElementById("nl-clear").addEventListener("click", () => { items.length = 0; renderStream(); });
+
+      if (bc) {
+        bc.onmessage = (ev) => {
+          const d = ev.data;
+          if (d && (d.type === "brain_activity" || d.type === "neural_thought" || d.type === "telemetry_event")) handleMsg(d);
+        };
+      }
+
+      function connect() {
+        const proto = location.protocol === "https:" ? "wss:" : "ws:";
+        const ws = new WebSocket(`${proto}//${location.host}/ws`);
+        ws.onopen = () => { wsEl.textContent = "WS: SYNCHRON"; };
+        ws.onmessage = (ev) => { try { handleMsg(JSON.parse(ev.data)); } catch (_e) {} };
+        ws.onclose = () => { wsEl.textContent = "WS: RECONNECT…"; setTimeout(connect, 1800); };
+      }
+      redrawAllSparks();
+      renderN8nPipelines();
+      connect();
+      fetch("/api/system/processes").then((r) => r.json()).then(applyTelemetry).catch(() => {});
+      fetch("/api/n8n/status").then((r) => r.json()).then(renderN8nPipelines).catch(() => {});
+    })();
+  </script>
+</body>
+</html>

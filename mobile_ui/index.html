@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#07080b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>JARVIS // MOBILE &amp; CAMERA</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="mobile.css" />
+</head>
+<body>
+  <div class="mobile-frame">
+
+    <!-- ============================================================
+         TOP-BAR HEADER (Connection-Radar & Mode)
+    ============================================================ -->
+    <header class="m-topbar">
+      <div class="m-tb-brand">
+        <span class="m-title">JARVIS</span>
+        <span class="m-slash">//</span>
+        <span class="m-sub">MOBILE</span>
+      </div>
+
+      <div class="m-tb-center">
+        <div id="radar-badge" class="radar-badge away" title="Verbindungsstatus zum Heim-PC/Pi">
+          <span class="radar-dot"></span>
+          <span id="radar-text" class="radar-text">PRÜFE VERBINDUNG…</span>
+        </div>
+      </div>
+
+      <div class="m-tb-right" style="display:flex;align-items:center;gap:6px;">
+        <button id="btn-settings-toggle" class="m-icon-btn" type="button" aria-label="Einstellungen">
+          <svg viewBox="0 0 24 24"><path d="M19.14 12.94a7.9 7.9 0 0 0 .06-.94 7.9 7.9 0 0 0-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.3 7.3 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.58.23-1.12.54-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.9 7.9 0 0 0-.06.94 7.9 7.9 0 0 0 .06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.04.71 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.12-.54 1.62-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ============================================================
+         AR-CAMERA VIEWPORT & SCANNER
+    ============================================================ -->
+    <section id="ar-container" class="ar-viewport">
+      <!-- Live Video Stream -->
+      <video id="camera-stream" autoplay playsinline muted></video>
+
+      <!-- 3D Hologramm-Kern wenn Kamera deaktiviert -->
+      <canvas id="core-canvas" class="hidden"></canvas>
+      <canvas id="snapshot-canvas" style="display:none;"></canvas>
+
+      <!-- HUD Overlay Elemente -->
+      <div class="ar-overlay">
+        <div class="hud-bracket tl"></div>
+        <div class="hud-bracket tr"></div>
+        <div class="hud-bracket bl"></div>
+        <div class="hud-bracket br"></div>
+
+        <!-- Laser Scanline (wird bei Bildanalyse aktiv) -->
+        <div id="laser-scanline" class="laser-scanline hidden"></div>
+
+        <!-- Zentriertes Zielkreuz -->
+        <div class="ar-crosshair">
+          <div class="ch-circle"></div>
+          <div class="ch-dot"></div>
+          <div class="ch-line-h"></div>
+          <div class="ch-line-v"></div>
+          <span id="target-lock-label" class="ch-label">AR SCANNER // AKTIV</span>
+        </div>
+
+        <!-- Status Badges oben im Video -->
+        <div class="ar-status-row">
+          <span id="cam-facing-label" class="ar-badge">RÜCKKAMERA (MAIN)</span>
+          <span id="torch-badge" class="ar-badge torch-off">🔦 TORCH: AUS</span>
+          <span id="res-badge" class="ar-badge">HD 1080p</span>
+        </div>
+      </div>
+
+      <!-- 4 Taktische Kamera-Steuerbuttons -->
+      <div class="ar-controls-bar">
+        <button id="btn-cam-switch" class="ar-btn" type="button" title="Kamera umschalten">
+          <span>🔄 WECHSEL</span>
+        </button>
+        <button id="btn-cam-torch" class="ar-btn" type="button" title="Taschenlampe / Licht">
+          <span id="torch-btn-label">🔦 LICHT</span>
+        </button>
+        <button id="btn-cam-snap" class="ar-btn highlight" type="button" title="Frame einfrieren & sofort analysieren">
+          <span>📸 SNAP &amp; FRAGE</span>
+        </button>
+        <button id="btn-cam-power" class="ar-btn" type="button" title="Kamera an/aus">
+          <span id="cam-power-label">🚫 CAM AUS</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         LIVE DIALOG & ANTWORT-BEREICH
+    ============================================================ -->
+    <section class="dialog-section">
+      <div class="dialog-status-bar">
+        <span id="jarvis-status" class="status-tag ready">STATUS: BEREIT</span>
+        <span id="active-model-tag" class="model-tag">MODEL: AUTO</span>
+        <span id="memory-sync-tag" class="sync-tag">SYNC: 0 NOTIZEN</span>
+      </div>
+
+      <div id="chat-stream" class="chat-stream">
+        <div class="msg-bubble jarvis">
+          <div class="msg-head">JARVIS</div>
+          <div class="msg-body">
+            Guten Tag, Chef. Mobile Einheit und AR-Kamera bereit. Wie kann ich behilflich sein?
+          </div>
+          <div class="msg-time">ONLINE</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         BOTTOM CONTROL-BAR (Push-to-Talk Mic & Schnellbefehle)
+    ============================================================ -->
+    <footer class="m-bottom-bar">
+      <!-- Input Zeile -->
+      <form id="text-form" class="m-input-row">
+        <button id="btn-attach-preview" class="btn-preview-thumb hidden" type="button" title="Angehängtes Foto entfernen">
+          <img id="attached-thumb" src="" alt="Thumbnail" />
+          <span class="thumb-del">✕</span>
+        </button>
+        <input id="text-input" type="text" placeholder="Befehl tippen oder sprechen..." autocomplete="off" />
+        <button id="btn-send" type="submit" class="btn-send" title="Senden">
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </form>
+
+      <!-- Großer Push-To-Talk Mikrofon-Button -->
+      <div class="mic-cluster">
+        <button id="btn-quick-sync" class="quick-pill" type="button" title="Gedächtnis mit Heim-PC synchronisieren">
+          <span>⟳ SYNC</span>
+        </button>
+
+        <button id="btn-mic" class="m-mic-btn" type="button" title="Spracheingabe halten oder tippen">
+          <div class="mic-ring-pulse"></div>
+          <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/></svg>
+        </button>
+
+        <button id="btn-tts-toggle" class="quick-pill" type="button" title="Sprachausgabe an/aus">
+          <span id="tts-label">🔊 STIMME</span>
+        </button>
+      </div>
+    </footer>
+
+    <!-- ============================================================
+         SETTINGS & CONFIG DRAWER (Slide-In von Rechts)
+    ============================================================ -->
+    <div id="settings-drawer" class="drawer hidden" aria-hidden="true">
+      <div class="drawer-header">
+        <h3>JARVIS // MOBILE EINSTELLUNGEN</h3>
+        <button id="btn-drawer-close" class="drawer-close" type="button">✕</button>
+      </div>
+
+      <div class="drawer-body">
+        <div class="cfg-section">
+          <h4>HEIM-SERVER IM WLAN &amp; 1-KLICK QR-KOPPLUNG</h4>
+          <button id="btn-scan-pairing-qr" class="cfg-btn qr-cta-btn" type="button">📷 QR-CODE SCANNEN (PC / PI KOPPELN)</button>
+          <div class="sync-info-box" style="margin-top:4px;">
+            <span id="stat-pairing-status">Kopplung: Noch nicht per QR verbunden</span>
+          </div>
+          <label>Windows-PC URL (z. B. http://192.168.1.XX:8000):</label>
+          <input id="cfg-home-url" type="url" placeholder="http://192.168.1.XX:8000" />
+          <label>Raspberry Pi URL (z. B. http://192.168.1.YY:8000):</label>
+          <input id="cfg-pi-url" type="url" placeholder="http://192.168.1.YY:8000" />
+          <label>Sync-Token:</label>
+          <input id="cfg-sync-token" type="text" placeholder="JARVIS-SYNC-KEY" />
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+            <button id="btn-test-connection" class="cfg-btn" type="button" style="flex:1;">VERBINDUNG TESTEN</button>
+            <button id="btn-import-pairing-json" class="cfg-btn" type="button" style="flex:1;">📋 QR-JSON EINFÜGEN</button>
+          </div>
+        </div>
+
+        <div class="cfg-section">
+          <h4>NATIVE ANDROID APP (.APK)</h4>
+          <p class="cfg-hint">
+            Installiere JARVIS als eigenständige native Android-App direkt auf deinem Smartphone:
+          </p>
+          <a id="btn-mobile-dl-apk" href="/download/jarvis.apk" class="cfg-btn highlight" download="JARVIS_Mobile.apk" style="display:flex;align-items:center;justify-content:center;text-decoration:none;gap:6px;margin-top:6px;">
+            <span>📲 ANDROID APK HERUNTERLADEN</span>
+          </a>
+          <div class="sync-info-box" style="margin-top:8px;">
+            <div id="mobile-apk-status">Status: Prüfe Server-APK…</div>
+          </div>
+        </div>
+
+        <div class="cfg-section">
+          <h4>STIMME &amp; OFFLINE-VOICE-CLONING</h4>
+          <p class="cfg-hint">
+            Online streamt J.A.R.V.I.S. die identische tiefe Stimme (<b>de-DE-ConradNeural</b>, Pitch -15Hz, Rate -5%) direkt vom PC/Server. Offline greift das geklonte Offline-Stimmenpaket oder die System-TTS mit erzwungenem Tiefbass-Pitch (0.55).
+          </p>
+
+          <label>Online / Server Standard-Stimme:</label>
+          <select id="cfg-online-voice">
+            <option value="de-DE-KillianNeural" selected>de-DE-KillianNeural (Tief, Markant // -15Hz, -5%)</option>
+            <option value="de-DE-ConradNeural">de-DE-ConradNeural (Tief, Rau // -15Hz, -5%)</option>
+          </select>
+
+          <label>Offline System-Stimme (Android Google TTS / iOS):</label>
+          <select id="cfg-offline-voice">
+            <option value="auto">Automatisch: Tiefste männliche DE-Stimme (de-de-x-deg)</option>
+          </select>
+
+          <label>Offline Tonhöhe (Pitch: <b id="lbl-offline-pitch">0.55</b> // Tief = 0.50–0.60):</label>
+          <input id="cfg-offline-pitch" type="range" min="0.50" max="0.70" step="0.01" value="0.55" />
+
+          <label>Offline Sprechtempo (Rate: <b id="lbl-offline-rate">0.88</b> // Ruhig = 0.85–0.90):</label>
+          <input id="cfg-offline-rate" type="range" min="0.75" max="1.00" step="0.01" value="0.88" />
+
+          <div class="sync-info-box" style="margin-top:8px;">
+            <div>Geklonte Offline-Sprachclips: <b id="stat-voice-clips">0</b></div>
+            <div id="voice-pack-status" style="font-size:11px;opacity:0.85;margin-top:2px;">Bereit für Offline-Synchronisation</div>
+          </div>
+
+          <button id="btn-test-voice" class="cfg-btn" type="button">🔊 STIMME TESTEN (ONLINE / OFFLINE)</button>
+          <button id="btn-clone-voice-pack" class="cfg-btn" type="button">📥 OFFLINE-STIMMENPAKET VOM PC KLONEN</button>
+        </div>
+
+        <div class="cfg-section">
+          <h4>AUTARK-MODUS // UNTERWEGS OHNE HEIM-PC</h4>
+          <p class="cfg-hint">
+            Sobald kein Heim-WLAN erreichbar ist, nutzt die App diese Keys direkt auf dem Smartphone für Live-Kamerabeschreibung &amp; Chat:
+          </p>
+
+          <label>Google Gemini API-Key (Multimodal 2.5 Flash):</label>
+          <input id="cfg-gemini-key" type="password" placeholder="AIzaSy..." />
+
+          <label>Groq API-Key (LLaMA 3.3 70B):</label>
+          <input id="cfg-groq-key" type="password" placeholder="gsk_..." />
+
+          <label>
+            <input id="cfg-pollinations-enabled" type="checkbox" checked />
+            Pollinations AI (Kostenlos &amp; Keyless) als Notfall-Fallback
+          </label>
+        </div>
+
+        <div class="cfg-section">
+          <h4>GEDÄCHTNIS &amp; SYNC</h4>
+          <div class="sync-info-box">
+            <div>Lokale Offline-Notizen: <b id="stat-local-mems">0</b></div>
+            <div>Ausstehende Sync-Objekte: <b id="stat-pending-mems">0</b></div>
+          </div>
+          <button id="btn-force-sync" class="cfg-btn" type="button">JETZT VOLLSTÄNDIG SYNCHRONISIEREN</button>
+          <button id="btn-clear-cache" class="cfg-btn danger" type="button">OFFLINE-CACHE LEEREN</button>
+        </div>
+
+      <div class="cfg-footer">
+        <button id="btn-save-settings" class="cfg-save-btn" type="button">SPEICHERN &amp; ÜBERNEHMEN</button>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         1-KLICK QR-SCANNER MODAL (Windows / Pi / Handy Kopplung)
+    ============================================================ -->
+    <div id="qr-scanner-modal" class="qr-modal hidden" aria-hidden="true">
+      <div class="qr-modal-head">
+        <span>📷 JARVIS 1-KLICK QR-KOPPLUNG</span>
+        <button id="btn-qr-close" class="drawer-close" type="button">✕ ABBRECHEN</button>
+      </div>
+      <div class="qr-viewfinder">
+        <video id="qr-video" autoplay playsinline muted></video>
+        <canvas id="qr-canvas" style="display:none;"></canvas>
+        <div class="qr-reticle">
+          <div class="qr-corner tl"></div>
+          <div class="qr-corner tr"></div>
+          <div class="qr-corner bl"></div>
+          <div class="qr-corner br"></div>
+          <div class="qr-scanline"></div>
+        </div>
+      </div>
+      <div class="qr-modal-foot">
+        <div id="qr-scan-status" class="qr-scan-status">Kamera auf den QR-Code in der Windows-/Pi-App richten…</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="jsqr.js"></script>
+  <script src="mobile.js"></script>
+</body>
+</html>

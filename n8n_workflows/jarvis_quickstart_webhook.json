@@ -1,0 +1,76 @@
+{
+  "name": "Jarvis Quickstart Webhook",
+  "nodes": [
+    {
+      "id": "2012d8ff-628a-403c-8066-203dabaafee5",
+      "name": "Jarvis Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "jarvis-quickstart",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jarvis-quickstart",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "6f678c7e-ee3c-4bc0-84a4-9ffd6e58d535",
+      "name": "Jarvis Logic Node",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const payload = $input.first()?.json || {};\nconst goal = \"Empfange Webhook-Befehl von Jarvis und sende JSON-Status zurueck\";\nreturn [{ json: { ok: true, workflow: goal, received: payload.body || payload, ts: new Date().toISOString() } }];"
+      }
+    },
+    {
+      "id": "93a0ba6b-20ff-466c-b8b4-97533cb03742",
+      "name": "Respond to Jarvis",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        780,
+        300
+      ],
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Jarvis Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Jarvis Logic Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jarvis Logic Node": {
+      "main": [
+        [
+          {
+            "node": "Respond to Jarvis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

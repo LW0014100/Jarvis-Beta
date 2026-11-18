@@ -1,0 +1,28 @@
+{
+  "devices": [
+    {
+      "id": "demo-socket-http",
+      "name": "Arbeitsplatz-Steckdose (Beispiel)",
+      "aliases": [
+        "steckdose",
+        "arbeitsplatz",
+        "smart home"
+      ],
+      "type": "http",
+      "method": "GET",
+      "on_url": "http://192.168.178.50/relay/0?turn=on",
+      "off_url": "http://192.168.178.50/relay/0?turn=off"
+    },
+    {
+      "id": "demo-pi5-gpio",
+      "name": "Werkbank-Relais (Pi 5 GPIO)",
+      "aliases": [
+        "relais",
+        "werkbank"
+      ],
+      "type": "gpio",
+      "gpio_pin": 18,
+      "active_low": false
+    }
+  ]
+}
